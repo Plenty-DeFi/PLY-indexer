@@ -1,0 +1,22 @@
+{
+  "voteEscrow": {
+    "address": "KT18fMAVwfCyjoyofnGQ9ij8Z5eW3MwdYWK7"
+  },
+  "ply": {
+    "address": "KT1UXbcpBhiWv99swLNd9uMqQbejLGGZF1R1"
+  },
+  "veSwap": {
+    "address": "KT1KJDdtWQY26TMnWucreTUs51u3Ue1Fck7H"
+  },
+  "voter": {
+    "address": "KT1UQdeF1BaWfeyZLnXeLdgQz5kicE6cCUXF"
+  },
+  "feeDistributor": {
+    "address": "KT1UjsbpTRaAjevqyX19az3my83fmUXru4HK"
+  },
+  "bigMaps": {
+    "locks": 121548,
+    "ledger": 121547,
+    "attached": 121543
+  }
+}
