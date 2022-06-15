@@ -11,6 +11,7 @@ export interface Config {
   sharedDirectory: string;
   tezGraph: string;
   tezGraphLimit: number;
+  rpc: string;
   postgres: {
     username: string;
     database: string;
@@ -48,6 +49,7 @@ export interface Lock {
   base_value: string;
   end: string;
   attached: boolean;
+  voting_power: string;
 }
 
 export interface LocksQueryVariable {
