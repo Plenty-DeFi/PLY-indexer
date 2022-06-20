@@ -5,7 +5,7 @@ export const config: Config = {
   tzktURL: process.env.TZKT_URL || "https://api.ithacanet.tzkt.io/v1",
   port: process.env.PORTS || "6024",
   tzktLimit: 1000,
-  tezGraphLimit: 1,
+  tezGraphLimit: 10,
   tzktOffset: 1000,
   sharedDirectory: process.env.SHARED_DIRECTORY || "./data",
   postgres: {
@@ -15,4 +15,5 @@ export const config: Config = {
     host: process.env.POSTGRES_HOST || "localhost",
   },
   tezGraph: process.env.TZGRAPH_URL || "https://ithacanet.tezgraph.tez.ie/graphql",
+  tezGraphWs: process.env.TZGRAPH_WS || "wss://ithacanet.tezgraph.tez.ie/graphql",
 };

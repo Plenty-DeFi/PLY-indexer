@@ -3,18 +3,21 @@ import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
 import { Config, Dependecies, Contracts, Transaction, LocksQueryVariable, LockValues, Lock } from "../types";
 import { request, gql } from "graphql-request";
+import { createClient, Client } from "graphql-ws";
+import WebSocket, { CloseEvent } from "ws";
 
 export default class LocksProcessor {
   private _config: Config;
   private _dbClient: DatabaseClient;
   private _tkztProvider: TzktProvider;
   private _contracts: Contracts;
-
+  private _graphClient: Client;
   constructor({ config, dbClient, tzktProvider, contracts }: Dependecies) {
     this._config = config;
     this._dbClient = dbClient;
     this._tkztProvider = tzktProvider;
     this._contracts = contracts;
+    //this._graphClient = createClient({ url: config.tezGraphWs });
   }
 
   async process(): Promise<void> {
@@ -55,8 +58,30 @@ export default class LocksProcessor {
         let cursor = data.bigmap_keys.edges[variables.limit - 1].cursor;
         variables.after = cursor;
       }
+      /*       this._graphClient.subscribe(
+        {
+          query: `subscription{
+            transactionAdded(
+              filter: {
+                destination: { equalTo: "KT18fMAVwfCyjoyofnGQ9ij8Z5eW3MwdYWK7" }
+              }
+            ) {
+                parameters{
+                  entrypoint
+                  value
+                }
+              }
+            }
+          `,
+        },
+        {
+          next: (data) => console.log("data:", data),
+          error: (error: CloseEvent) => console.log("error as:", error.reason, error.code),
+          complete: () => console.log("completed"),
+        }
+      ); */
     } catch (err) {
-      console.error(err);
+      console.error("error a:", err);
     }
   }
   private async _processLock(lock: any): Promise<void> {

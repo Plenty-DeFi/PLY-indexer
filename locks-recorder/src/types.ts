@@ -10,6 +10,7 @@ export interface Config {
   tzktOffset: number;
   sharedDirectory: string;
   tezGraph: string;
+  tezGraphWs: string;
   tezGraphLimit: number;
   postgres: {
     username: string;
@@ -127,4 +128,10 @@ export interface Transaction {
       }
     | undefined;
   storage: any;
+}
+
+export interface BlockData {
+  hash: string;
+  timestamp: string;
+  level: string;
 }

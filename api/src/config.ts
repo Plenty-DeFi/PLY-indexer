@@ -15,5 +15,5 @@ export const config: Config = {
     host: process.env.POSTGRES_HOST || "localhost",
   },
   tezGraph: process.env.TZGRAPH_URL || "https://ithacanet.tezgraph.tez.ie/graphql",
-  rpc: process.env.RPC || "https://ithacanet.smartpy.io",
+  rpc: process.env.RPC || "https://rpc.tzkt.io/ithacanet",
 };

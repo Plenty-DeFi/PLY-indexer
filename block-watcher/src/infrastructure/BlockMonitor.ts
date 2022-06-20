@@ -23,9 +23,14 @@ export default class BlockMonitor {
         return;
       } else {
         this._lastBlockHash = block.hash;
-        console.log(`Found Block ${block.hash} at ${block.header.timestamp.toLocaleString()}`);
+        console.log(
+          `Found Block ${
+            block.hash
+          } at ${block.header.timestamp.toLocaleString()}`
+        );
         messenger.broadcast({
           hash: block.hash,
+          level: block.header.level.toString(),
           timestamp: block.header.timestamp.toString(),
         });
       }
