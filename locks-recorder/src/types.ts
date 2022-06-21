@@ -1,4 +1,5 @@
 import { LargeNumberLike } from "crypto";
+import internal from "stream";
 import DatabaseClient from "./infrastructure/DatabaseClient";
 import TzktProvider from "./infrastructure/TzktProvider";
 
@@ -55,6 +56,7 @@ export interface LocksQueryVariable {
   id: string;
   limit: number;
   after?: string;
+  keys?: string[];
 }
 
 export interface LockValues {
@@ -100,6 +102,25 @@ export interface GetTransactionParameters {
   limit: number;
   offset: number;
   select: string;
+}
+
+export interface GetBigMapUpdatesParameters {
+  bigmapId: string;
+  level: string;
+  limit: number;
+  offset: number;
+}
+
+export interface BigMapUpdateResponseType {
+  id: number;
+  level: number;
+  timestamp: string;
+  bigmap: number;
+  action: string;
+  content?: {
+    key: any;
+    value: any;
+  };
 }
 
 export interface Transaction {

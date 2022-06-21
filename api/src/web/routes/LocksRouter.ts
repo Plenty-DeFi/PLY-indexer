@@ -13,7 +13,7 @@ function build({ dbClient, config, contracts }: Dependecies): Router {
     }
     let locks;
     if (address && !token_id) {
-      locks = await dbClient.get({
+      locks = await dbClient.getAll({
         select: "*",
         table: "locks",
         where: `owner='${address}'`,
@@ -33,6 +33,7 @@ function build({ dbClient, config, contracts }: Dependecies): Router {
     }
     let finalLocks: Lock[] = [];
     if (locks.rowCount !== 0) {
+      console.log("locks", locks.rows);
       const finalLocksPromise = locks.rows.map(async (lock) => {
         const contract = await tezos.contract.at(contracts.voteEscrow.address);
         const date = Math.round(new Date().getTime() / 1000);
@@ -45,6 +46,7 @@ function build({ dbClient, config, contracts }: Dependecies): Router {
         };
       });
       finalLocks = await Promise.all(finalLocksPromise);
+      console.log("finalLocks", finalLocks);
     }
 
     return res.json({ result: finalLocks });

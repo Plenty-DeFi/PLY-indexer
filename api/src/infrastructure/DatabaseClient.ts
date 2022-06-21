@@ -43,6 +43,15 @@ export default class DatabaseClient {
     }
   }
 
+  async getAll(params: DatabaseGetParams): Promise<QueryResult<any>> {
+    try {
+      const res = await this._dbClient.query(`SELECT ${params.select} FROM ${params.table} WHERE ${params.where};`);
+      return res;
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async insert(params: DatabaseInsertParams): Promise<QueryResult<any>> {
     try {
       const res = await this._dbClient.query(`INSERT INTO ${params.table} ${params.columns} VALUES ${params.values};`);

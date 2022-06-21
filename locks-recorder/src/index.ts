@@ -18,6 +18,7 @@ const blockListener = new BlockListener(config);
     blockListener.listen();
     blockListener.blockEmitter.on("newBlock", (b: BlockData) => {
       console.log("YAY block listener got a new block", b.level, b.hash);
+      locksProcesser.updateLocks(b.level);
     });
   } catch (err) {
     console.error(err.message);
