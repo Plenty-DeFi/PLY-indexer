@@ -130,3 +130,19 @@ export interface Transaction {
     | undefined;
   storage: any;
 }
+
+export interface AlltokenCheckpoints {
+  key:   AlltokenCheckpoints_Key;
+  value: AlltokenCheckpoints_Value;
+}
+export interface AlltokenCheckpoints_Key {
+  nat_0: string;
+  nat_1: string;
+}
+export interface AlltokenCheckpoints_Value {
+  ts:    string;
+  bias:  string;
+  slope: string;
+}
+
+

@@ -1,7 +1,7 @@
 import * as qs from "qs";
 import axios from "axios";
 
-import { Config, GetTransactionParameters, Transaction } from "../types";
+import { AlltokenCheckpoints, Config, GetTransactionParameters, Transaction} from "../types";
 
 export default class TzktProvider {
   private _tzktURL: string;
@@ -41,4 +41,34 @@ export default class TzktProvider {
       throw err;
     }
   }
+
+  async getAllTokenCheckpoints(tokenId: number): Promise<AlltokenCheckpoints[]> {
+    try {
+      // mapid variable
+      const res = await axios.get(`${this._tzktURL}/bigmaps/121552/keys?key.nat_0="${tokenId}"&select=key,value`);
+      if(res.data.length === 0) {throw "Lock does not exist";}
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getNumTokenCheckpoints(tokenId: number): Promise<string> {
+    try {
+      // mapid variable
+      const res = await axios.get(`${this._tzktURL}/bigmaps/121549/keys/${tokenId}`);
+      if(res.status === 204){throw "Lock does not exist";}
+      return res.data.value;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+
+
+  
+
+
+
+ 
 }
