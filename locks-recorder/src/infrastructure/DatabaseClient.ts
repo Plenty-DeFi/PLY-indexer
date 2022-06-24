@@ -1,6 +1,6 @@
 import { Client, QueryResult } from "pg";
 
-import { Config, DatabaseGetParams, DatabaseInsertParams, DatabaseUpdateParams } from "../types";
+import { Config, DatabaseDeleteParams, DatabaseGetParams, DatabaseInsertParams, DatabaseUpdateParams } from "../types";
 
 export default class DatabaseClient {
   private _dbClient: Client;
@@ -46,6 +46,15 @@ export default class DatabaseClient {
   async insert(params: DatabaseInsertParams): Promise<QueryResult<any>> {
     try {
       const res = await this._dbClient.query(`INSERT INTO ${params.table} ${params.columns} VALUES ${params.values};`);
+      return res;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async delete(params: DatabaseDeleteParams): Promise<QueryResult<any>> {
+    try {
+      const res = await this._dbClient.query(`DELETE FROM ${params.table} WHERE ${params.where};`);
       return res;
     } catch (err) {
       throw err;

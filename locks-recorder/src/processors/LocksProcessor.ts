@@ -58,8 +58,19 @@ export default class LocksProcessor {
         for (const lock of data.bigmap_keys.edges) {
           if (lock.node.current_value.value === "1") {
             await this._processLock(lock);
+          } else {
+            const existingEntry = await this._dbClient.get({
+              select: "*",
+              table: "locks",
+              where: `id=${lock.tokenId} AND owner='${lock.owner}'`,
+            });
+            if (existingEntry.rowCount === 0) {
+              await this._dbClient.delete({
+                table: "locks",
+                where: `id=${lock.tokenId}`,
+              });
+            }
           }
-          //TODO: write else part when lock is withdrawn, set everything to 0 (ledger=0 and not present in locks bigmap)
         }
         if (!data.bigmap_keys.page_info.has_next_page) {
           break;
@@ -112,8 +123,19 @@ export default class LocksProcessor {
             console.log(lock);
             if (lock.value !== 0) {
               await this._processLockValue(lock.tokenId, lock.owner);
+            } else {
+              const existingEntry = await this._dbClient.get({
+                select: "*",
+                table: "locks",
+                where: `id=${lock.tokenId} AND owner='${lock.owner}'`,
+              });
+              if (existingEntry.rowCount === 0) {
+                await this._dbClient.delete({
+                  table: "locks",
+                  where: `id=${lock.tokenId}`,
+                });
+              }
             }
-            //TODO: write else part when lock is withdrawn, set everything to 0 (ledger=0 and not present in locks bigmap)
           }
           break;
         } else {
@@ -321,7 +343,6 @@ export default class LocksProcessor {
           break;
         } else {
           tokenIdUpdates = tokenIdUpdates.concat(updates.map((update) => update.content.key.toString()));
-          //update.action === "remove" this means lock withdrawn, handle accordlingly later
           offset += this._config.tzktOffset;
         }
       }
@@ -348,7 +369,6 @@ export default class LocksProcessor {
           break;
         } else {
           tokenIdUpdates = tokenIdUpdates.concat(updates.map((update) => update.content.key.toString()));
-          //update.action === "remove" this means lock withdrawn, handle accordlingly later
           offset += this._config.tzktOffset;
         }
       }

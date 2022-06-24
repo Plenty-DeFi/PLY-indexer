@@ -81,6 +81,10 @@ export interface DatabaseGetParams {
   select: string;
   where: string;
 }
+export interface DatabaseDeleteParams {
+  table: string;
+  where: string;
+}
 
 export interface DatabaseInsertParams {
   table: string;
