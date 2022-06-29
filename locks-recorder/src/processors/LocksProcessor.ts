@@ -62,12 +62,12 @@ export default class LocksProcessor {
             const existingEntry = await this._dbClient.get({
               select: "*",
               table: "locks",
-              where: `id=${lock.tokenId} AND owner='${lock.owner}'`,
+              where: `id=${lock.node.key[1]} AND owner='${lock.node.key[0]}'`,
             });
-            if (existingEntry.rowCount === 0) {
+            if (existingEntry.rowCount > 0) {
               await this._dbClient.delete({
                 table: "locks",
-                where: `id=${lock.tokenId}`,
+                where: `id=${lock.node.key[1]}`,
               });
             }
           }
@@ -78,28 +78,6 @@ export default class LocksProcessor {
         let cursor = data.bigmap_keys.edges[variables.limit - 1].cursor;
         variables.after = cursor;
       }
-      /*       this._graphClient.subscribe(
-        {
-          query: `subscription{
-            transactionAdded(
-              filter: {
-                destination: { equalTo: "KT18fMAVwfCyjoyofnGQ9ij8Z5eW3MwdYWK7" }
-              }
-            ) {
-                parameters{
-                  entrypoint
-                  value
-                }
-              }
-            }
-          `,
-        },
-        {
-          next: (data) => console.log("data:", data),
-          error: (error: CloseEvent) => console.log("error as:", error.reason, error.code),
-          complete: () => console.log("completed"),
-        }
-      ); */
     } catch (err) {
       console.error("error a:", err);
     }
@@ -129,7 +107,7 @@ export default class LocksProcessor {
                 table: "locks",
                 where: `id=${lock.tokenId} AND owner='${lock.owner}'`,
               });
-              if (existingEntry.rowCount === 0) {
+              if (existingEntry.rowCount > 0) {
                 await this._dbClient.delete({
                   table: "locks",
                   where: `id=${lock.tokenId}`,

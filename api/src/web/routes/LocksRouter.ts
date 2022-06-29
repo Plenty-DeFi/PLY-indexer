@@ -1,11 +1,9 @@
 import { Request, Response, Router } from "express";
 import { Dependecies, Lock } from "../../types";
-import { TezosToolkit } from "@taquito/taquito";
 import { votingPower } from "../../infrastructure/utils";
 
 function build({ dbClient, config, contracts }: Dependecies): Router {
   const router = Router();
-  const tezos = new TezosToolkit(config.rpc);
   router.get("/", async (req: Request, res: Response) => {
     const address = req.query.address as string;
     const token_id = req.query.token_id as string;
@@ -36,10 +34,10 @@ function build({ dbClient, config, contracts }: Dependecies): Router {
     if (locks.rowCount !== 0) {
       console.log("locks", locks.rows);
       const finalLocksPromise = locks.rows.map(async (lock) => {
-        const contract = await tezos.contract.at(contracts.voteEscrow.address);
+        //const contract = await tezos.contract.at(contracts.voteEscrow.address);
         const date = Math.round(new Date().getTime() / 1000);
-        const result = await votingPower(lock.id , date , 0);
-        
+        const result = await votingPower(lock.id, date, 0);
+
         // const result = await contract.contractViews
         //   .get_token_voting_power({ token_id: lock.id, ts: date, time: 0 })
         //   .executeView({ viewCaller: "KT1H7Bg7r7Aa9sci2hoJtmTdS7W64aq4vev8" });
