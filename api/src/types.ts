@@ -103,6 +103,12 @@ export interface GetTransactionParameters {
   select: string;
 }
 
+export interface GetUnclaimedEpochParameters {
+  bigMapId: string;
+  tokenId: string;
+  currentEpoch: number;
+}
+
 export interface Transaction {
   id: number;
   level: number;
@@ -132,7 +138,7 @@ export interface Transaction {
 }
 
 export interface AlltokenCheckpoints {
-  key:   AlltokenCheckpoints_Key;
+  key: AlltokenCheckpoints_Key;
   value: AlltokenCheckpoints_Value;
 }
 export interface AlltokenCheckpoints_Key {
@@ -140,9 +146,7 @@ export interface AlltokenCheckpoints_Key {
   nat_1: string;
 }
 export interface AlltokenCheckpoints_Value {
-  ts:    string;
-  bias:  string;
+  ts: string;
+  bias: string;
   slope: string;
 }
-
-

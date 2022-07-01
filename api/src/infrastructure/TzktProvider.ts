@@ -1,7 +1,13 @@
 import * as qs from "qs";
 import axios from "axios";
 
-import { AlltokenCheckpoints, Config, GetTransactionParameters, Transaction} from "../types";
+import {
+  AlltokenCheckpoints,
+  Config,
+  GetTransactionParameters,
+  GetUnclaimedEpochParameters,
+  Transaction,
+} from "../types";
 
 export default class TzktProvider {
   private _tzktURL: string;
@@ -33,6 +39,38 @@ export default class TzktProvider {
     }
   }
 
+  async getUnclaimedEpochs(params: GetUnclaimedEpochParameters): Promise<number[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMapId}/keys`, {
+        params: {
+          ["key.token_id"]: params.tokenId,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      const unclaimedEpochs: number[] = [];
+      const claimedEpochs = res.data.map((data: any) => {
+        return data.key.epoch;
+      });
+      let i = params.currentEpoch;
+      return new Promise((resolve, reject) => {
+        while (i > 0) {
+          if (!claimedEpochs.includes(i)) {
+            unclaimedEpochs.push(i);
+          }
+          i--;
+          if (i === 0) {
+            resolve(unclaimedEpochs);
+            break;
+          }
+        }
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getOperation(hash: string): Promise<Transaction[]> {
     try {
       const res = await axios.get(`${this._tzktURL}/operations/${hash}`);
@@ -46,7 +84,9 @@ export default class TzktProvider {
     try {
       // mapid variable
       const res = await axios.get(`${this._tzktURL}/bigmaps/121552/keys?key.nat_0="${tokenId}"&select=key,value`);
-      if(res.data.length === 0) {throw "Lock does not exist";}
+      if (res.data.length === 0) {
+        throw "Lock does not exist";
+      }
       return res.data;
     } catch (err) {
       throw err;
@@ -57,18 +97,12 @@ export default class TzktProvider {
     try {
       // mapid variable
       const res = await axios.get(`${this._tzktURL}/bigmaps/121549/keys/${tokenId}`);
-      if(res.status === 204){throw "Lock does not exist";}
+      if (res.status === 204) {
+        throw "Lock does not exist";
+      }
       return res.data.value;
     } catch (err) {
       throw err;
     }
   }
-
-
-
-  
-
-
-
- 
 }

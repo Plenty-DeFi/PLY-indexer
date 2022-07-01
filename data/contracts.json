@@ -17,6 +17,7 @@
   "bigMaps": {
     "locks": 121548,
     "ledger": 121547,
-    "attached": 121543
+    "attached": 121543,
+    "claim_ledger": 121544
   }
 }
