@@ -18,6 +18,7 @@ function build({ dbClient, config, contracts }: Dependecies): Router {
         where: `owner='${address}'`,
       });
     } else if (!address && token_id) {
+      //todo get unclaimed epoch and total value unclaimed
       locks = await dbClient.get({
         select: "*",
         table: "locks",
