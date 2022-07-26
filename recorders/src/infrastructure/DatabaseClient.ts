@@ -27,6 +27,22 @@ export default class DatabaseClient {
           attached BOOLEAN NOT NULL
         );`
       );
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS pools (
+          amm VARCHAR(50) PRIMARY KEY,
+          lqtToken VARCHAR(50) NOT NULL,
+          token1 VARCHAR(50) NOT NULL,
+          token2 VARCHAR(50) NOT NULL,
+          token1Check BOOLEAN NOT NULL,
+          token2Check BOOLEAN NOT NULL,
+          token1Id NUMERIC NOT NULL,
+          token2Id NUMERIC NOT NULL,
+          lqtTokenBigMap VARCHAR(100) NOT NULL,
+          gauge VARCHAR(50) NOT NULL,
+          bribe VARCHAR(50) NOT NULL,
+          gaugeBigMap VARCHAR(100) NOT NULL
+        );`
+      );
     } catch (err) {
       throw err;
     }
@@ -37,6 +53,15 @@ export default class DatabaseClient {
       const res = await this._dbClient.query(
         `SELECT ${params.select} FROM ${params.table} WHERE ${params.where} LIMIT 1;`
       );
+      return res;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getAll(params: DatabaseGetParams): Promise<QueryResult<any>> {
+    try {
+      const res = await this._dbClient.query(`SELECT ${params.select} FROM ${params.table} WHERE ${params.where};`);
       return res;
     } catch (err) {
       throw err;

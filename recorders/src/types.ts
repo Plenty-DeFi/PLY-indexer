@@ -41,6 +41,7 @@ export interface Contracts {
     locks: number;
     ledger: number;
     attached: number;
+    amm_to_gauge_bribe: number;
   };
 }
 
@@ -90,6 +91,14 @@ export interface DatabaseInsertParams {
   table: string;
   columns: string;
   values: string;
+}
+
+export interface PoolsApiResponse {
+  key: string;
+  value: {
+    gauge: string;
+    bribe: string;
+  };
 }
 
 export interface DatabaseUpdateParams {

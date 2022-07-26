@@ -1,4 +1,3 @@
-import BigNumber from "bignumber.js";
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
 import {
@@ -12,8 +11,7 @@ import {
   BigMapUpdateResponseType,
 } from "../types";
 import { request, gql } from "graphql-request";
-import { createClient, Client } from "graphql-ws";
-import WebSocket, { CloseEvent } from "ws";
+import { Client } from "graphql-ws";
 
 export default class LocksProcessor {
   private _config: Config;

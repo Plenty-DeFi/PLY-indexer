@@ -1,3 +1,4 @@
+import PoolsProcessor from "./processors/PoolsProcessor";
 import { BlockData } from "types";
 import { config } from "./config";
 import { buildDependencies } from "./dependencies";
@@ -9,12 +10,14 @@ const dependencies = buildDependencies(config);
 
 const heartbeat = new HeartBeat(config);
 const locksProcesser = new LocksProcessor(dependencies);
+const poolsProcessor = new PoolsProcessor(dependencies);
 const blockListener = new BlockListener(config);
 (async () => {
   try {
     heartbeat.start();
     await dependencies.dbClient.init();
     locksProcesser.process();
+    poolsProcessor.process();
     blockListener.listen();
     blockListener.blockEmitter.on("newBlock", (b: BlockData) => {
       console.log("YAY block listener got a new block", b.level, b.hash);

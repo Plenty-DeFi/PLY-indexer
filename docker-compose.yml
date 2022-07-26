@@ -21,8 +21,8 @@ services:
     ports:
       - "6024:6024"
 
-  locks-recorder:
-    build: ./locks-recorder
+  recorders:
+    build: ./recorders
     depends_on:
       db:
         condition: service_healthy

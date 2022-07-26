@@ -14,6 +14,6 @@ export const config: Config = {
     password: process.env.POSTGRES_PASSWORD || "123456",
     host: process.env.POSTGRES_HOST || "localhost",
   },
-  tezGraph: process.env.TZGRAPH_URL || "https://ithacanet.tezgraph.tez.ie/graphql",
-  rpc: process.env.RPC || "https://rpc.tzkt.io/ithacanet",
+  tezGraph: process.env.TZGRAPH_URL || "https://ghostnet.tezgraph.ecadinfra.com/graphql",
+  rpc: process.env.RPC || "https://rpc.tzkt.io/ghostnet",
 };

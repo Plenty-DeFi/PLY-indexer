@@ -1,7 +1,7 @@
 import qs from "qs";
 import axios from "axios";
 
-import { Config, GetBigMapUpdatesParameters, GetTransactionParameters, Transaction } from "../types";
+import { Config, GetBigMapUpdatesParameters, GetTransactionParameters, PoolsApiResponse, Transaction } from "../types";
 
 export default class TzktProvider {
   private _tzktURL: string;
@@ -83,6 +83,81 @@ export default class TzktProvider {
 
         return res.data;
       }
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getPools<T>(bigMap: string): Promise<PoolsApiResponse[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${bigMap}/keys`, {
+        params: {
+          select: "key,value",
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getAmmData<T>(amm: string): Promise<{
+    token1Address: string;
+    token2Address: string;
+    lqtTokenAddress: string;
+    token1Check: boolean;
+    token2Check: boolean;
+    token1Id: string;
+    token2Id: string;
+  }> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${amm}/storage`, {
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return {
+        token1Address: res.data.token1Address,
+        token2Address: res.data.token2Address,
+        lqtTokenAddress: res.data.lqtAddress ? res.data.lqtAddress : res.data.lpTokenAddress,
+        token1Check: res.data.token1Check,
+        token2Check: res.data.token2Check,
+        token1Id: res.data.token1Id,
+        token2Id: res.data.token2Id,
+      };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getLqtBigMap<T>(lqtAddress: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${lqtAddress}/storage`, {
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data.balances.toString();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getGaugeBigMap<T>(gauge: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${gauge}/storage`, {
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data.balances.toString();
     } catch (err) {
       throw err;
     }

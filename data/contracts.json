@@ -1,23 +1,24 @@
 {
   "voteEscrow": {
-    "address": "KT18fMAVwfCyjoyofnGQ9ij8Z5eW3MwdYWK7"
+    "address": "KT1E8Z8GD6BaBFvo7HVdd4sNxRT88ELNE6Ew"
   },
   "ply": {
-    "address": "KT1UXbcpBhiWv99swLNd9uMqQbejLGGZF1R1"
+    "address": "KT1WRTwp9RND2Nz82afznhWH5JfdLHa6AG7U"
   },
   "veSwap": {
-    "address": "KT1KJDdtWQY26TMnWucreTUs51u3Ue1Fck7H"
+    "address": "KT1L2nEDuQ6nnJu2cFDibQ2LbxLaz5EuibLF"
   },
   "voter": {
-    "address": "KT1UQdeF1BaWfeyZLnXeLdgQz5kicE6cCUXF"
+    "address": "KT1WgpZzP56nFVNAzoeD5VXYPBUYFkDs4qk9"
   },
   "feeDistributor": {
-    "address": "KT1UjsbpTRaAjevqyX19az3my83fmUXru4HK"
+    "address": "KT1G5yigxdCVH2Jj7VCGkpsSc4SNwZ2EmyGg"
   },
   "bigMaps": {
-    "locks": 121548,
-    "ledger": 121547,
-    "attached": 121543,
-    "claim_ledger": 121544
+    "locks": 156961,
+    "ledger": 156960,
+    "attached": 156956,
+    "claim_ledger": 156957,
+    "amm_to_gauge_bribe": 156966
   }
 }
