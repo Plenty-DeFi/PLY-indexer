@@ -42,13 +42,15 @@ export default class PoolsProcessor {
       const lqtBigMap = await this._tkztProvider.getLqtBigMap(ammData.lqtTokenAddress);
       //get gaugeBigMap
       const gaugeBigMap = await this._tkztProvider.getGaugeBigMap(pool.value.gauge);
+      //get bribeBigMap
+      const bribeBigMap = await this._tkztProvider.getBribeBigMap(pool.value.bribe);
       //save in db
       console.log(`Inseting Pool ${pool.key}`);
       this._dbClient.insert({
         table: "pools",
         columns:
-          "(amm, lqtToken, token1, token2, token1Check, token2Check, token1Id, token2Id, lqtTokenBigMap, gauge, bribe, gaugeBigMap)",
-        values: `('${pool.key}', '${ammData.lqtTokenAddress}', '${ammData.token1Address}', '${ammData.token2Address}', ${ammData.token1Check}, ${ammData.token2Check}, ${ammData.token1Id}, ${ammData.token2Id}, '${lqtBigMap}', '${pool.value.gauge}', '${pool.value.bribe}', '${gaugeBigMap}')`,
+          "(amm, lqt_Token, token1, token2, token1_Check, token2_Check, token1_Id, token2_Id, lqt_Token_BigMap, gauge, bribe, gauge_BigMap, bribe_BigMap)",
+        values: `('${pool.key}', '${ammData.lqtTokenAddress}', '${ammData.token1Address}', '${ammData.token2Address}', ${ammData.token1Check}, ${ammData.token2Check}, ${ammData.token1Id}, ${ammData.token2Id}, '${lqtBigMap}', '${pool.value.gauge}', '${pool.value.bribe}', '${gaugeBigMap}', '${bribeBigMap}')`,
       });
     } catch (e) {
       console.log(e);

@@ -163,6 +163,20 @@ export default class TzktProvider {
     }
   }
 
+  async getBribeBigMap<T>(bribe: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${bribe}/storage`, {
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data.epoch_bribes.toString();
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getOperation(hash: string): Promise<Transaction[]> {
     try {
       const res = await axios.get(`${this._tzktURL}/operations/${hash}`);

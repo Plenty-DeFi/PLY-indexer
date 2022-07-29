@@ -78,7 +78,7 @@ export interface BlockData {
 export interface DatabaseGetParams {
   table: string;
   select: string;
-  where: string;
+  where?: string;
 }
 
 export interface DatabaseInsertParams {

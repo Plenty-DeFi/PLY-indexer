@@ -30,17 +30,18 @@ export default class DatabaseClient {
       await this._dbClient.query(
         `CREATE TABLE IF NOT EXISTS pools (
           amm VARCHAR(50) PRIMARY KEY,
-          lqtToken VARCHAR(50) NOT NULL,
+          lqt_Token VARCHAR(50) NOT NULL,
           token1 VARCHAR(50) NOT NULL,
           token2 VARCHAR(50) NOT NULL,
-          token1Check BOOLEAN NOT NULL,
-          token2Check BOOLEAN NOT NULL,
-          token1Id NUMERIC NOT NULL,
-          token2Id NUMERIC NOT NULL,
-          lqtTokenBigMap VARCHAR(100) NOT NULL,
+          token1_Check BOOLEAN NOT NULL,
+          token2_Check BOOLEAN NOT NULL,
+          token1_Id NUMERIC NOT NULL,
+          token2_Id NUMERIC NOT NULL,
+          lqt_Token_BigMap VARCHAR(100) NOT NULL,
           gauge VARCHAR(50) NOT NULL,
           bribe VARCHAR(50) NOT NULL,
-          gaugeBigMap VARCHAR(100) NOT NULL
+          gauge_BigMap VARCHAR(100) NOT NULL,
+          bribe_BigMap VARCHAR(100) NOT NULL
         );`
       );
     } catch (err) {
