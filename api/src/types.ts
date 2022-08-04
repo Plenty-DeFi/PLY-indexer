@@ -40,7 +40,12 @@ export interface Contracts {
     locks: number;
     ledger: number;
     attached: number;
+    claim_ledger: number;
+    amm_to_gauge_bribe: number;
+    total_amm_votes: number;
+    total_epoch_votes: number;
   };
+  EMISSION_FACTOR: number;
 }
 
 export interface Lock {

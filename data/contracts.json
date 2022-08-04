@@ -19,6 +19,9 @@
     "ledger": 160221,
     "attached": 160217,
     "claim_ledger": 160218,
-    "amm_to_gauge_bribe": 160228
-  }
+    "amm_to_gauge_bribe": 160228,
+    "total_amm_votes": 160231,
+    "total_epoch_votes": 160232
+  },
+  "EMISSION_FACTOR": 5
 }

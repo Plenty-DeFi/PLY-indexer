@@ -89,6 +89,88 @@ export default class TzktProvider {
     }
   }
 
+  async getCurrentTotalSupply(ply: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${ply}/storage`);
+      return res.data.totalSupply;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getLockedSupply(ve: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${ve}/storage`);
+      return res.data.locked_supply;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getEmissionData(voter: string): Promise<{ base: string; real: string; genesis: string }> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${voter}/storage`);
+      return res.data.emission;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getAmmVotes(bigmap: string, epoch: string, amm: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${bigmap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key.epoch"]: epoch,
+          ["key.amm"]: amm,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      if (res.data.length === 0) {
+        return "0";
+      } else {
+        return res.data[0].value;
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getEpochVotes(bigmap: string, epoch: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${bigmap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key"]: epoch,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      if (res.data.length === 0) {
+        return "0";
+      } else {
+        return res.data[0].value;
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getAmmPoolValues(amm: string): Promise<{ token1Pool: string; token2Pool: string }> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${amm}/storage`);
+      return {
+        token1Pool: res.data.token1Pool,
+        token2Pool: res.data.token2Pool,
+      };
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getBribes(bigmap: string, epoch: string): Promise<[]> {
     try {
       const res = await axios.get(`${this._tzktURL}/bigmaps/${bigmap}/keys`, {
