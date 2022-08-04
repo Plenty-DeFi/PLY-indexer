@@ -187,7 +187,7 @@ export default class LocksProcessor {
         id: this._contracts.bigMaps.locks.toString(),
       };
       const data = await request(this._config.tezGraph, query, variables);
-      return data.bigmap_values.edges[0].node.value;
+      return { base_value: data.bigmap_values.edges[0].node.value[0], end: data.bigmap_values.edges[0].node.value[1] };
     } catch (err) {
       throw err;
     }
@@ -200,7 +200,7 @@ export default class LocksProcessor {
             edges {
               node {
                 key
-                value_michelson
+                value
               }
             }
           }
@@ -214,7 +214,7 @@ export default class LocksProcessor {
       if (data.bigmap_values.edges.length === 0) {
         return false;
       } else {
-        return data.bigmap_values.edges[0].node.value_michelson === "Unit";
+        return data.bigmap_values.edges[0].node.value !== null;
       }
     } catch (err) {
       throw err;
