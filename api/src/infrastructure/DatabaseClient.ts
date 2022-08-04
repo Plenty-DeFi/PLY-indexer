@@ -18,15 +18,6 @@ export default class DatabaseClient {
   async init(): Promise<void> {
     try {
       this._dbClient.connect();
-      await this._dbClient.query(
-        `CREATE TABLE IF NOT EXISTS locks (
-          id NUMERIC PRIMARY KEY,
-          owner VARCHAR(50) NOT NULL,
-          base_value VARCHAR(100) NOT NULL,
-          end_ts VARCHAR(100) NOT NULL,
-          attached BOOLEAN NOT NULL
-        );`
-      );
     } catch (err) {
       throw err;
     }

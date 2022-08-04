@@ -1,24 +1,24 @@
 {
   "voteEscrow": {
-    "address": "KT1E8Z8GD6BaBFvo7HVdd4sNxRT88ELNE6Ew"
+    "address": "KT1Xrb4eEizLTwR9sZgckjugfuaPB563KKd6"
   },
   "ply": {
-    "address": "KT1WRTwp9RND2Nz82afznhWH5JfdLHa6AG7U"
+    "address": "KT1XFABWm5H9CMFL3T5iNb7Zz6YVpLHQjpsA"
   },
   "veSwap": {
-    "address": "KT1L2nEDuQ6nnJu2cFDibQ2LbxLaz5EuibLF"
+    "address": "KT1RMKHfeKSNq8ZN3PEcMojtyq5nZZjtx4kP"
   },
   "voter": {
-    "address": "KT1WgpZzP56nFVNAzoeD5VXYPBUYFkDs4qk9"
+    "address": "KT1PexY3Jn8BCJmVpVLNN944YpVLM2LWTMMV"
   },
   "feeDistributor": {
-    "address": "KT1G5yigxdCVH2Jj7VCGkpsSc4SNwZ2EmyGg"
+    "address": "KT1LXjBJCfBbig762TBPR8dRSYMiDf2D9CGY"
   },
   "bigMaps": {
-    "locks": 156961,
-    "ledger": 156960,
-    "attached": 156956,
-    "claim_ledger": 156957,
-    "amm_to_gauge_bribe": 156966
+    "locks": 160222,
+    "ledger": 160221,
+    "attached": 160217,
+    "claim_ledger": 160218,
+    "amm_to_gauge_bribe": 160228
   }
 }

@@ -1,8 +1,7 @@
 import { Request, Response, Router } from "express";
-import { Dependecies, Lock } from "../../types";
-import { votingPower } from "../../infrastructure/utils";
+import { Dependecies } from "../../types";
 
-function build({ dbClient, config, contracts }: Dependecies): Router {
+function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Router {
   const router = Router();
   router.get("/", async (req: Request, res: Response) => {
     try {
@@ -14,17 +13,33 @@ function build({ dbClient, config, contracts }: Dependecies): Router {
           where: `amm='${amm}'`,
         });
         if (pool.rowCount !== 0) {
-          return res.json(pool.rows[0]);
+          const currentEpoch = await tzktProvider.getCurrentEpoch(contracts.voter.address);
+          const bribes = await tzktProvider.getBribes(pool.rows[0].bribe_bigmap, currentEpoch);
+          return res.json({ ...pool.rows[0], bribes });
         } else {
           return res.status(400).json({ message: "AMM_NOT_EXIST" });
         }
       } else {
+        let pools = [];
         const pool = await dbClient.getAllNoQuery({
           select: "*",
           table: "pools",
         });
+        if (pool.rowCount !== 0) {
+          const currentEpoch = await tzktProvider.getCurrentEpoch(contracts.voter.address);
+          const finalPoolsPromise = pool.rows.map(async (pool) => {
+            const bribes = await tzktProvider.getBribes(pool.rows[0].bribe_bigmap, currentEpoch);
+            return {
+              ...pool,
+              bribes,
+            };
+          });
+          pools = await Promise.all(finalPoolsPromise);
 
-        return res.json(pool.rows);
+          return res.json(pools);
+        } else {
+          return res.json([]);
+        }
       }
     } catch (e) {
       return res.status(400).json({ message: e });

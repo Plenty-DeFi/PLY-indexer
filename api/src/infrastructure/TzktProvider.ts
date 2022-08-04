@@ -80,6 +80,32 @@ export default class TzktProvider {
     }
   }
 
+  async getCurrentEpoch(voter: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${voter}/storage`);
+      return res.data.epoch;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getBribes(bigmap: string, epoch: string): Promise<[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${bigmap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key.epoch"]: epoch,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getAllTokenCheckpoints(tokenId: number): Promise<AlltokenCheckpoints[]> {
     try {
       // mapid variable
