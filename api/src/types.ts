@@ -57,6 +57,22 @@ export interface Lock {
   voting_power: string;
 }
 
+export interface Pool {
+  amm: string;
+  lqt_token: string;
+  token1: string;
+  token2: string;
+  token1_check: boolean;
+  token2_check: boolean;
+  token1_id: number;
+  token2_id: number;
+  lqt_token_bigmap: string;
+  gauge: string;
+  bribe: string;
+  gauge_bigmap: string;
+  bribe_bigmap: string;
+}
+
 export interface LocksQueryVariable {
   id: string;
   limit: number;

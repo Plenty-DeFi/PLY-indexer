@@ -1,6 +1,6 @@
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
-import { Config, Dependecies, Contracts, PoolsApiResponse } from "../types";
+import { Config, Dependecies, Contracts, PoolsApiResponse, BigMapUpdateResponseType } from "../types";
 
 export default class PoolsProcessor {
   private _config: Config;
@@ -54,6 +54,43 @@ export default class PoolsProcessor {
       });
     } catch (e) {
       console.log(e);
+    }
+  }
+
+  async updatePools(level: string): Promise<void> {
+    try {
+      let tokenIdUpdates: string[] = [];
+      let offset = 0;
+      while (true) {
+        const updates = await this._tkztProvider.getBigMapUpdates<BigMapUpdateResponseType[]>({
+          level,
+          bigmapId: this._contracts.bigMaps.amm_to_gauge_bribe.toString(),
+          limit: this._config.tzktLimit,
+          offset,
+        });
+        if (updates.length === 0) {
+          break;
+        } else {
+          updates.forEach(async (update) => {
+            if (update.action === "add_key") {
+              await this._processPool({
+                key: update.content.key,
+                value: update.content.value,
+              });
+            } else {
+              console.log("Removing poool", update.content.key);
+              await this._dbClient.delete({
+                table: "pools",
+                where: `amm='${update.content.key}'`,
+              });
+            }
+          });
+          offset += this._config.tzktOffset;
+        }
+      }
+    } catch (err) {
+      console.error("error b:", err);
+      throw err;
     }
   }
 }

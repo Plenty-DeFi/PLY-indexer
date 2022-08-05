@@ -163,8 +163,8 @@ export default class TzktProvider {
     try {
       const res = await axios.get(`${this._tzktURL}/contracts/${amm}/storage`);
       return {
-        token1Pool: res.data.token1Pool,
-        token2Pool: res.data.token2Pool,
+        token1Pool: res.data.token1Pool ? res.data.token1Pool : res.data.token1_pool,
+        token2Pool: res.data.token2Pool ? res.data.token2Pool : res.data.token2_pool,
       };
     } catch (err) {
       throw err;

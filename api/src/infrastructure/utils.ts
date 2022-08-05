@@ -1,6 +1,7 @@
 import BigNumber from "bignumber.js";
 import TzktProvider from "./TzktProvider";
 import { config } from "../config";
+import { Contracts, Pool } from "../types";
 
 const TzktObj = new TzktProvider(config);
 
@@ -113,4 +114,53 @@ export const getTokenDecimal = (tokenAddress: string, tokenCheck: boolean, token
   } else {
     return 18;
   }
+};
+
+export const getRealEmission = async (tzktProvider: TzktProvider, contracts: Contracts) => {
+  const totalSupply = new BigNumber(await tzktProvider.getCurrentTotalSupply(contracts.ply.address));
+  const lockedSupply = new BigNumber(await tzktProvider.getLockedSupply(contracts.voteEscrow.address));
+  const emission = await tzktProvider.getEmissionData(contracts.voter.address);
+  const emission_offset = new BigNumber(emission.base)
+    .multipliedBy(lockedSupply)
+    .div(totalSupply)
+    .div(contracts.EMISSION_FACTOR);
+  const emission_real = new BigNumber(emission.base).minus(emission_offset);
+  console.log(emission_real.toString());
+  return emission_real;
+};
+
+export const calculateAPR = async (
+  contracts: Contracts,
+  tzktProvider: TzktProvider,
+  pool: Pool,
+  currentEpoch: string,
+  emission_real: BigNumber
+) => {
+  const amm_votes = new BigNumber(
+    await tzktProvider.getAmmVotes(contracts.bigMaps.total_amm_votes.toString(), currentEpoch, pool.amm)
+  );
+  const epoch_votes = new BigNumber(
+    await tzktProvider.getEpochVotes(contracts.bigMaps.total_epoch_votes.toString(), currentEpoch)
+  );
+  const vote_share = amm_votes.div(epoch_votes).times(100);
+  const amm_emission = new BigNumber(emission_real).multipliedBy(vote_share).div(100);
+
+  const amm_supply = await tzktProvider.getAmmPoolValues(pool.amm);
+
+  const token1Decimals = getTokenDecimal(pool.token1, pool.token1_check, pool.token1_id.toString());
+  const token1Price = getPrice(pool.token1, pool.token1_check, pool.token1_id.toString());
+  const token2Decimals = getTokenDecimal(pool.token2, pool.token2_check, pool.token2_id.toString());
+  const token2Price = getPrice(pool.token2, pool.token2_check, pool.token2_id.toString());
+
+  const token1DollarValue = new BigNumber(amm_supply.token1Pool).multipliedBy(token1Price).div(10 ** token1Decimals);
+  const token2DollarValue = new BigNumber(amm_supply.token2Pool).multipliedBy(token2Price).div(10 ** token2Decimals);
+  const poolDollarValue = token1DollarValue.plus(token2DollarValue);
+  console.log("poolDollar", poolDollarValue.toString());
+  const plyDollarValue = amm_emission
+    .multipliedBy(getPrice(contracts.ply.address, false, "0"))
+    .div(10 ** getTokenDecimal(contracts.ply.address, false, "0"));
+  console.log("plyDollar", plyDollarValue.toString(), amm_supply);
+
+  const apr = new BigNumber(plyDollarValue).div(poolDollarValue).times(100 * 52);
+  return apr.toString();
 };
