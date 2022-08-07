@@ -188,10 +188,11 @@ export default class TzktProvider {
     }
   }
 
+//   Call VE Storage to get map ID
   async getAllTokenCheckpoints(tokenId: number): Promise<AlltokenCheckpoints[]> {
     try {
       // mapid variable
-      const res = await axios.get(`${this._tzktURL}/bigmaps/121552/keys?key.nat_0="${tokenId}"&select=key,value`);
+      const res = await axios.get(`${this._tzktURL}/bigmaps/160226/keys?key.nat_0="${tokenId}"&select=key,value`);
       if (res.data.length === 0) {
         throw "Lock does not exist";
       }
@@ -204,7 +205,7 @@ export default class TzktProvider {
   async getNumTokenCheckpoints(tokenId: number): Promise<string> {
     try {
       // mapid variable
-      const res = await axios.get(`${this._tzktURL}/bigmaps/121549/keys/${tokenId}`);
+      const res = await axios.get(`${this._tzktURL}/bigmaps/160223/keys/${tokenId}`);
       if (res.status === 204) {
         throw "Lock does not exist";
       }
