@@ -72,7 +72,7 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
   }
 };
 
-export const getPrice = (tokenAddress: string, tokenCheck: boolean, tokenId: string) => {
+export const getPrice = (tokenAddress: string, tokenId: string) => {
   if (tokenAddress === "KT1XFABWm5H9CMFL3T5iNb7Zz6YVpLHQjpsA") {
     return 0.1;
   } else if (tokenAddress === "KT1Uw1oio434UoWFuZTNKFgt5wTM9tfuf7m7") {
@@ -94,7 +94,7 @@ export const getPrice = (tokenAddress: string, tokenCheck: boolean, tokenId: str
   }
 };
 
-export const getTokenDecimal = (tokenAddress: string, tokenCheck: boolean, tokenId: string) => {
+export const getTokenDecimal = (tokenAddress: string, tokenId: string) => {
   if (tokenAddress === "KT1XFABWm5H9CMFL3T5iNb7Zz6YVpLHQjpsA") {
     return 18;
   } else if (tokenAddress === "KT1Uw1oio434UoWFuZTNKFgt5wTM9tfuf7m7") {
@@ -147,18 +147,20 @@ export const calculateAPR = async (
 
   const amm_supply = await tzktProvider.getAmmPoolValues(pool.amm);
 
-  const token1Decimals = getTokenDecimal(pool.token1, pool.token1_check, pool.token1_id.toString());
-  const token1Price = getPrice(pool.token1, pool.token1_check, pool.token1_id.toString());
-  const token2Decimals = getTokenDecimal(pool.token2, pool.token2_check, pool.token2_id.toString());
-  const token2Price = getPrice(pool.token2, pool.token2_check, pool.token2_id.toString());
+  const token1Price = getPrice(pool.token1, pool.token1_id.toString());
 
-  const token1DollarValue = new BigNumber(amm_supply.token1Pool).multipliedBy(token1Price).div(10 ** token1Decimals);
-  const token2DollarValue = new BigNumber(amm_supply.token2Pool).multipliedBy(token2Price).div(10 ** token2Decimals);
+  const token2Price = getPrice(pool.token2, pool.token2_id.toString());
+
+  const token1DollarValue = new BigNumber(amm_supply.token1Pool)
+    .multipliedBy(token1Price)
+    .div(10 ** pool.token1_decimals);
+  const token2DollarValue = new BigNumber(amm_supply.token2Pool)
+    .multipliedBy(token2Price)
+    .div(10 ** pool.token2_decimals);
+
   const poolDollarValue = token1DollarValue.plus(token2DollarValue);
   console.log("poolDollar", poolDollarValue.toString());
-  const plyDollarValue = amm_emission
-    .multipliedBy(getPrice(contracts.ply.address, false, "0"))
-    .div(10 ** getTokenDecimal(contracts.ply.address, false, "0"));
+  const plyDollarValue = amm_emission.multipliedBy(getPrice(contracts.ply.address, "0")).div(10 ** 18);
   console.log("plyDollar", plyDollarValue.toString(), amm_supply);
 
   const apr = new BigNumber(plyDollarValue).div(poolDollarValue).times(100 * 52);

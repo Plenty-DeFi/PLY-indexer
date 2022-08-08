@@ -62,10 +62,14 @@ export interface Pool {
   lqt_token: string;
   token1: string;
   token2: string;
-  token1_check: boolean;
-  token2_check: boolean;
-  token1_id: number;
-  token2_id: number;
+  token1_decimals: number;
+  token2_decimals: number;
+  token1_variant: boolean;
+  token2_variant: boolean;
+  token1_symbol: string;
+  token2_symbol: string;
+  token1_id: number | undefined;
+  token2_id: number | undefined;
   lqt_token_bigmap: string;
   gauge: string;
   bribe: string;

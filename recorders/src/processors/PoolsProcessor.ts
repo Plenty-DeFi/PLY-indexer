@@ -1,6 +1,7 @@
+import axios from "axios";
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
-import { Config, Dependecies, Contracts, PoolsApiResponse, BigMapUpdateResponseType } from "../types";
+import { Config, Dependecies, Contracts, PoolsApiResponse, BigMapUpdateResponseType, AmmData } from "../types";
 
 export default class PoolsProcessor {
   private _config: Config;
@@ -37,9 +38,7 @@ export default class PoolsProcessor {
   private async _processPool(pool: PoolsApiResponse): Promise<void> {
     try {
       //get AMM data (lqtTokenAddress, token1Address and token2Address)
-      const ammData = await this._tkztProvider.getAmmData(pool.key);
-      //get lqtTokenBigMap
-      const lqtBigMap = await this._tkztProvider.getLqtBigMap(ammData.lqtTokenAddress);
+      const ammData = await this.getAmmData(pool.key);
       //get gaugeBigMap
       const gaugeBigMap = await this._tkztProvider.getGaugeBigMap(pool.value.gauge);
       //get bribeBigMap
@@ -49,11 +48,49 @@ export default class PoolsProcessor {
       this._dbClient.insert({
         table: "pools",
         columns:
-          "(amm, lqt_Token, token1, token2, token1_Check, token2_Check, token1_Id, token2_Id, lqt_Token_BigMap, gauge, bribe, gauge_BigMap, bribe_BigMap)",
-        values: `('${pool.key}', '${ammData.lqtTokenAddress}', '${ammData.token1Address}', '${ammData.token2Address}', ${ammData.token1Check}, ${ammData.token2Check}, ${ammData.token1Id}, ${ammData.token2Id}, '${lqtBigMap}', '${pool.value.gauge}', '${pool.value.bribe}', '${gaugeBigMap}', '${bribeBigMap}')`,
+          "(amm, type, lqt_decimals, lqt_symbol, lqt_Token, token1, token2, token1_variant, token2_variant, token1_decimals, token2_decimals, token1_Id, token2_Id, token1_symbol, token2_symbol, lqt_Token_BigMap, gauge, bribe, gauge_BigMap, bribe_BigMap)",
+        values: `('${pool.key}', '${ammData.type}', ${ammData.lqtDecimals}, '${ammData.lqtSymbol}', '${ammData.lqtAddress}', '${ammData.token1.address}', '${ammData.token2.address}', '${ammData.token1.variant}', '${ammData.token2.variant}', '${ammData.token1.decimals}', '${ammData.token2.decimals}', ${ammData.token1.tokenId}, ${ammData.token2.tokenId}, '${ammData.token1.symbol}', '${ammData.token2.symbol}', '${ammData.lqtBigMap}', '${pool.value.gauge}', '${pool.value.bribe}', '${gaugeBigMap}', '${bribeBigMap}')`,
       });
     } catch (e) {
       console.log(e);
+    }
+  }
+
+  private async getAmmData(amm: string): Promise<AmmData> {
+    try {
+      const result = (
+        await axios.get(this._config.configUrl + "/amm?network=testnet", {
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
+          },
+        })
+      ).data[amm];
+
+      return {
+        token1: {
+          address: result.token1.address,
+          symbol: result.token1.symbol,
+          variant: result.token1.variant,
+          tokenId: result.token1.tokenId,
+          decimals: result.token1.decimals,
+        },
+        token2: {
+          address: result.token2.address,
+          symbol: result.token2.symbol,
+          variant: result.token2.variant,
+          tokenId: result.token2.tokenId,
+          decimals: result.token2.decimals,
+        },
+        address: result.address,
+        type: result.type,
+        lqtAddress: result.lpToken.address,
+        lqtBigMap: result.lpToken.mapId,
+        lqtSymbol: result.lpToken.symbol,
+        lqtDecimals: result.lpToken.decimals,
+      };
+    } catch (err) {
+      throw err;
     }
   }
 

@@ -19,6 +19,7 @@ export interface Config {
     password: string;
     host: string;
   };
+  configUrl: string;
 }
 
 export interface Contracts {
@@ -168,4 +169,38 @@ export interface BlockData {
   hash: string;
   timestamp: string;
   level: string;
+}
+
+export enum TokenVariant {
+  TEZ = "TEZ",
+  FA12 = "FA1.2",
+  FA2 = "FA2",
+}
+
+export interface Token {
+  address: string | undefined;
+  symbol: string;
+  variant: TokenVariant;
+  tokenId: number | undefined;
+  decimals: number;
+}
+
+export interface Tokens {
+  [key: string]: Token;
+}
+
+export enum AmmType {
+  STABLE = "STABLE",
+  VOLATILE = "VOLATILE",
+}
+
+export interface AmmData {
+  address: string;
+  token1: Token;
+  token2: Token;
+  type: AmmType;
+  lqtAddress: string;
+  lqtSymbol: string;
+  lqtBigMap: string;
+  lqtDecimals: number;
 }
