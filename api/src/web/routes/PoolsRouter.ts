@@ -1,13 +1,7 @@
 import { Request, Response, Router } from "express";
 import { Dependecies } from "../../types";
-
-import {
-  calculateAPR,
-  getMainnetAddress,
-  getPrice,
-  getRealEmission,
-  getTokenDecimal,
-} from "../../infrastructure/utils";
+import BigNumber from "bignumber.js";
+import { calculateAPR, getPrice, getRealEmission, getTokenDecimal } from "../../infrastructure/utils";
 
 function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Router {
   const router = Router();
@@ -28,10 +22,10 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
           const apr = await calculateAPR(contracts, tzktProvider, pools.rows[0], currentEpoch, realEmission);
           const pool = pools.rows[0];
           return res.json({
-            pool: getMainnetAddress(pool.type),
-            gauge: pool.gauge,
+            pool: pool.amm,
             bribes,
             apr,
+            previousApr: 0,
           });
         } else {
           return res.status(400).json({ message: "AMM_NOT_EXIST" });
@@ -49,10 +43,10 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
             const bribes = await tzktProvider.getBribes(pool.bribe_bigmap, currentEpoch);
             const apr = await calculateAPR(contracts, tzktProvider, pool, currentEpoch, realEmission);
             return {
-              pool: getMainnetAddress(pool.type),
-              gauge: pool.gauge,
+              pool: pool.amm,
               bribes,
               apr,
+              previousApr: 0,
             };
           });
 
