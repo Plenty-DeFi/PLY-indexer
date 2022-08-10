@@ -182,13 +182,15 @@ export default class TzktProvider {
           return qs.stringify(params, { arrayFormat: "repeat" });
         },
       });
-      return res.data;
+      return res.data.map((data: any) => {
+        return data.value.bribe;
+      });
     } catch (err) {
       throw err;
     }
   }
 
-//   Call VE Storage to get map ID
+  //   Call VE Storage to get map ID
   async getAllTokenCheckpoints(tokenId: number): Promise<AlltokenCheckpoints[]> {
     try {
       // mapid variable
