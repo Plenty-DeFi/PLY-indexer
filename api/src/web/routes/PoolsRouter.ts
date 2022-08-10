@@ -1,7 +1,13 @@
 import { Request, Response, Router } from "express";
 import { Dependecies } from "../../types";
-import BigNumber from "bignumber.js";
-import { calculateAPR, getPrice, getRealEmission, getTokenDecimal } from "../../infrastructure/utils";
+
+import {
+  calculateAPR,
+  getMainnetAddress,
+  getPrice,
+  getRealEmission,
+  getTokenDecimal,
+} from "../../infrastructure/utils";
 
 function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Router {
   const router = Router();
@@ -22,32 +28,8 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
           const apr = await calculateAPR(contracts, tzktProvider, pools.rows[0], currentEpoch, realEmission);
           const pool = pools.rows[0];
           return res.json({
-            amm: pool.amm,
-            type: pool.type,
+            pool: getMainnetAddress(pool.type),
             gauge: pool.gauge,
-            bribe: pool.bribe,
-            gauge_bigmap: pool.gauge_bigmap,
-            bribe_bigmap: pool.bribe_bigmap,
-            lqt: {
-              lqt_decimals: pool.lqt_decimals,
-              lqt_symbol: pool.lqt_symbol,
-              lqt_token: pool.lqt_token,
-              lqt_token_bigmap: pool.lqt_token_bigmap,
-            },
-            token1: {
-              address: pool.token1,
-              variant: pool.token1_variant,
-              decimals: pool.token1_decimals,
-              symbol: pool.token1_symbol,
-              tokenId: pool.token1_id,
-            },
-            token2: {
-              address: pool.token2,
-              variant: pool.token2_variant,
-              decimals: pool.token2_decimals,
-              symbol: pool.token2_symbol,
-              tokenId: pool.token2_id,
-            },
             bribes,
             apr,
           });
@@ -67,32 +49,8 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
             const bribes = await tzktProvider.getBribes(pool.bribe_bigmap, currentEpoch);
             const apr = await calculateAPR(contracts, tzktProvider, pool, currentEpoch, realEmission);
             return {
-              amm: pool.amm,
-              type: pool.type,
+              pool: getMainnetAddress(pool.type),
               gauge: pool.gauge,
-              bribe: pool.bribe,
-              gauge_bigmap: pool.gauge_bigmap,
-              bribe_bigmap: pool.bribe_bigmap,
-              lqt: {
-                lqt_decimals: pool.lqt_decimals,
-                lqt_symbol: pool.lqt_symbol,
-                lqt_token: pool.lqt_token,
-                lqt_token_bigmap: pool.lqt_token_bigmap,
-              },
-              token1: {
-                address: pool.token1,
-                variant: pool.token1_variant,
-                decimals: pool.token1_decimals,
-                symbol: pool.token1_symbol,
-                tokenId: pool.token1_id,
-              },
-              token2: {
-                address: pool.token2,
-                variant: pool.token2_variant,
-                decimals: pool.token2_decimals,
-                symbol: pool.token2_symbol,
-                tokenId: pool.token2_id,
-              },
               bribes,
               apr,
             };

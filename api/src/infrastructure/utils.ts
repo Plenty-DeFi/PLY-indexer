@@ -166,3 +166,14 @@ export const calculateAPR = async (
   const apr = new BigNumber(plyDollarValue).div(poolDollarValue).times(100 * 52);
   return apr.toString();
 };
+
+const testnetToMainnet = {
+  KT1Px1JEGhrUNdojjS6QHrTWXLdWVwWByCiB: "KT1PU4Ce89RyF1itwYxknVNcvtUWKdKy6rvQ",
+  KT1XLpc153VJL1mMsmgfZ9Ff2ANSD3qVDtcV: "KT1Qs52cCz1gLK8LYi6cZJm7YjExg6MYLdkG",
+};
+
+export const getMainnetAddress = (type: string) => {
+  if (type == "VOLATILE") {
+    return "KT1Qs52cCz1gLK8LYi6cZJm7YjExg6MYLdkG";
+  } else return "KT1PU4Ce89RyF1itwYxknVNcvtUWKdKy6rvQ";
+};
