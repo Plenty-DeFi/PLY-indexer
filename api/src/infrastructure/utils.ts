@@ -73,8 +73,10 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
 };
 
 export const getPrice = (tokenAddress: string, tokenId: string) => {
-  if (tokenAddress === "KT1XFABWm5H9CMFL3T5iNb7Zz6YVpLHQjpsA") {
+  if (tokenAddress === "KT1ArfQ6At3NhzMbiGwLzGtvekytjXq6Gy2G") {
     return 0.1;
+  } else if (tokenAddress == "KT1Q4qRd8mKS7eWUgTfJzCN8RC6h9CzzjVJb") {
+    return 1.8;
   } else if (tokenAddress === "KT1Uw1oio434UoWFuZTNKFgt5wTM9tfuf7m7") {
     if (tokenId === "0") {
       return 1500;
@@ -90,12 +92,12 @@ export const getPrice = (tokenAddress: string, tokenId: string) => {
       return 0;
     }
   } else {
-    return 0;
+    return 1.8;
   }
 };
 
 export const getTokenDecimal = (tokenAddress: string, tokenId: string) => {
-  if (tokenAddress === "KT1XFABWm5H9CMFL3T5iNb7Zz6YVpLHQjpsA") {
+  if (tokenAddress === "KT1ArfQ6At3NhzMbiGwLzGtvekytjXq6Gy2G") {
     return 18;
   } else if (tokenAddress === "KT1Uw1oio434UoWFuZTNKFgt5wTM9tfuf7m7") {
     if (tokenId === "0") {
@@ -112,7 +114,7 @@ export const getTokenDecimal = (tokenAddress: string, tokenId: string) => {
       return 18;
     }
   } else {
-    return 18;
+    return 6;
   }
 };
 

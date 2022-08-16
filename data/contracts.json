@@ -1,27 +1,27 @@
 {
   "voteEscrow": {
-    "address": "KT1Xrb4eEizLTwR9sZgckjugfuaPB563KKd6"
+    "address": "KT1LuyczajtnU8PMsyqsWNYtZLRG7kbiseKs"
   },
   "ply": {
-    "address": "KT1XFABWm5H9CMFL3T5iNb7Zz6YVpLHQjpsA"
+    "address": "KT1ArfQ6At3NhzMbiGwLzGtvekytjXq6Gy2G"
   },
   "veSwap": {
-    "address": "KT1RMKHfeKSNq8ZN3PEcMojtyq5nZZjtx4kP"
+    "address": "KT1TfpTQsyEEwDJUKSsBwR9GKrLXxZjz7uxB"
   },
   "voter": {
-    "address": "KT1PexY3Jn8BCJmVpVLNN944YpVLM2LWTMMV"
+    "address": "KT1V2dQjTgmtaxm7H2JFqEYwcERd5ULQhyHn"
   },
   "feeDistributor": {
-    "address": "KT1LXjBJCfBbig762TBPR8dRSYMiDf2D9CGY"
+    "address": "KT1LvtCwLnW6qTZRQLzVTZx9jRDC1FKK6guq"
   },
   "bigMaps": {
-    "locks": 160222,
-    "ledger": 160221,
-    "attached": 160217,
-    "claim_ledger": 160218,
-    "amm_to_gauge_bribe": 160228,
-    "total_amm_votes": 160231,
-    "total_epoch_votes": 160232
+    "locks": 162778,
+    "ledger": 162777,
+    "attached": 162773,
+    "claim_ledger": 162774,
+    "amm_to_gauge_bribe": 162784,
+    "total_amm_votes": 162787,
+    "total_epoch_votes": 162788
   },
   "EMISSION_FACTOR": 5
 }
