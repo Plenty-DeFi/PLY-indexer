@@ -1,7 +1,7 @@
 import BigNumber from "bignumber.js";
 import TzktProvider from "./TzktProvider";
 import { config } from "../config";
-import { Contracts, Pool } from "../types";
+import { Contracts, Pool, Token, TokenType } from "../types";
 
 const TzktObj = new TzktProvider(config);
 
@@ -169,13 +169,18 @@ export const calculateAPR = async (
   return apr.toString();
 };
 
-const testnetToMainnet = {
-  KT1Px1JEGhrUNdojjS6QHrTWXLdWVwWByCiB: "KT1PU4Ce89RyF1itwYxknVNcvtUWKdKy6rvQ",
-  KT1XLpc153VJL1mMsmgfZ9Ff2ANSD3qVDtcV: "KT1Qs52cCz1gLK8LYi6cZJm7YjExg6MYLdkG",
-};
-
 export const getMainnetAddress = (type: string) => {
   if (type == "VOLATILE") {
     return "KT1Qs52cCz1gLK8LYi6cZJm7YjExg6MYLdkG";
   } else return "KT1PU4Ce89RyF1itwYxknVNcvtUWKdKy6rvQ";
+};
+
+export const getToken = (type: TokenType, tokens: Token[]): string => {
+  if (type.hasOwnProperty("fa2")) {
+    return tokens.find((x) => x.address == type.fa2.address && x.tokenId.toString() == type.fa2.nat.toString()).symbol;
+  } else if (type.hasOwnProperty("fa12")) {
+    return tokens.find((x) => x.address == type.fa12).symbol;
+  } else {
+    return "tez";
+  }
 };

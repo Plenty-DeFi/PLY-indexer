@@ -183,7 +183,7 @@ export default class TzktProvider {
         },
       });
       return res.data.map((data: any) => {
-        return { name: "MATIC.e", value: data.value.bribe.value };
+        return data.value.bribe;
       });
     } catch (err) {
       throw err;

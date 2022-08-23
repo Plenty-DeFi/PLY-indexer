@@ -1,4 +1,4 @@
-import { LargeNumberLike } from "crypto";
+import Cache from "./infrastructure/Cache";
 import DatabaseClient from "./infrastructure/DatabaseClient";
 import TzktProvider from "./infrastructure/TzktProvider";
 
@@ -18,6 +18,22 @@ export interface Config {
     password: string;
     host: string;
   };
+  ttl: {
+    data: number;
+    history: number;
+  };
+  configURL: string;
+}
+
+export interface Data {
+  tokens: Token[];
+}
+
+export interface Token {
+  address: string;
+  symbol: string;
+  variant: string;
+  tokenId: number;
 }
 
 export interface Contracts {
@@ -89,10 +105,12 @@ export interface LockValues {
 }
 
 export interface Dependecies {
+  cache: Cache;
   config: Config;
   dbClient: DatabaseClient;
   tzktProvider: TzktProvider;
   contracts: Contracts;
+  getData: () => Promise<Data>;
 }
 
 export interface BlockData {
@@ -174,4 +192,19 @@ export interface AlltokenCheckpoints_Value {
   ts: string;
   bias: string;
   slope: string;
+}
+
+export interface CachedValue {
+  data: any;
+  storedAt: Date | undefined;
+  ttl: number | undefined;
+}
+
+export interface TokenType {
+  fa2?: {
+    nat: string;
+    address: string;
+  };
+  fa12?: string;
+  tez?: {};
 }

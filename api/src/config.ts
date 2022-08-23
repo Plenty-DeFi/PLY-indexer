@@ -16,4 +16,10 @@ export const config: Config = {
   },
   tezGraph: process.env.TZGRAPH_URL || "https://ghostnet.tezgraph.ecadinfra.com/graphql",
   rpc: process.env.RPC || "https://ghostnet.smartpy.io",
+
+  ttl: {
+    data: parseInt(process.env.DATA_TTL) || 300000,
+    history: parseInt(process.env.HISTORY_TTL) || 0,
+  },
+  configURL: process.env.CONFIG_URL || "https://config.plentydefi.com/v1/config",
 };

@@ -96,7 +96,6 @@ export default class PoolsProcessor {
 
   async updatePools(level: string): Promise<void> {
     try {
-      let tokenIdUpdates: string[] = [];
       let offset = 0;
       while (true) {
         const updates = await this._tkztProvider.getBigMapUpdates<BigMapUpdateResponseType[]>({
