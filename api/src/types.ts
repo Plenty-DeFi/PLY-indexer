@@ -36,6 +36,9 @@ export interface Token {
   tokenId: number;
 }
 
+export interface APR {
+  [key: string]: string;
+}
 export interface Contracts {
   voteEscrow: {
     address: string;

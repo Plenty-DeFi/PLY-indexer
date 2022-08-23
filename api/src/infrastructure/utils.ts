@@ -169,10 +169,16 @@ export const calculateAPR = async (
   return apr.toString();
 };
 
-export const getMainnetAddress = (type: string) => {
-  if (type == "VOLATILE") {
+export const getMainnetAddress = (amm: string) => {
+  if (amm == "KT1Px1JEGhrUNdojjS6QHrTWXLdWVwWByCiB") {
+    return "KT1PU4Ce89RyF1itwYxknVNcvtUWKdKy6rvQ";
+  } else if ((amm = "KT1XLpc153VJL1mMsmgfZ9Ff2ANSD3qVDtcV")) {
     return "KT1Qs52cCz1gLK8LYi6cZJm7YjExg6MYLdkG";
-  } else return "KT1PU4Ce89RyF1itwYxknVNcvtUWKdKy6rvQ";
+  } else if (amm == "KT1SUT6U8qpKDKjfYkZaNTwdF544Gfzmrzyk") {
+    return "KT1Dhy1gVW3PSC9cms9QJ7xPMPPpip2V9aA6";
+  } else if (amm == "KT18n2zSM4zb7RYnTXq2LRzRuAAtP9E5pk11") {
+    return "KT1CAYNQGvYSF5UvHK21grMrKpe2563w9UcX";
+  } else return "KT1D1NcffeDR3xQ75fUFoJXZzD6WQp96Je3L";
 };
 
 export const getToken = (type: TokenType, tokens: Token[]): string => {

@@ -1,6 +1,5 @@
 import { Request, Response, Router } from "express";
 import { Dependecies, TokenType } from "../../types";
-import BigNumber from "bignumber.js";
 import { calculateAPR, getMainnetAddress, getRealEmission, getToken } from "../../infrastructure/utils";
 
 function build({ dbClient, config, contracts, tzktProvider, getData }: Dependecies): Router {
@@ -29,7 +28,7 @@ function build({ dbClient, config, contracts, tzktProvider, getData }: Dependeci
           const apr = await calculateAPR(contracts, tzktProvider, pools.rows[0], currentEpoch, realEmission);
           const pool = pools.rows[0];
           return res.json({
-            pool: getMainnetAddress(pool.type),
+            pool: getMainnetAddress(pool.amm),
             bribes: bribeFinal,
             apr,
             previousApr: 0,
@@ -57,7 +56,7 @@ function build({ dbClient, config, contracts, tzktProvider, getData }: Dependeci
             });
             const apr = await calculateAPR(contracts, tzktProvider, pool, currentEpoch, realEmission);
             return {
-              pool: getMainnetAddress(pool.type),
+              pool: getMainnetAddress(pool.amm),
               bribes: bribeFinal,
               apr,
               previousApr: 0,
