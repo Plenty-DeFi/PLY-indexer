@@ -37,7 +37,7 @@ function build({ dbClient, config, contracts }: Dependecies): Router {
       const finalLocksPromise = locks.rows.map(async (lock) => {
         //const contract = await tezos.contract.at(contracts.voteEscrow.address);
         const date = Math.round(new Date().getTime() / 1000);
-        const result = await votingPower(lock.id, date, 0);
+        const result = await votingPower(lock.id, date, 1);
 
         // const result = await contract.contractViews
         //   .get_token_voting_power({ token_id: lock.id, ts: date, time: 0 })
