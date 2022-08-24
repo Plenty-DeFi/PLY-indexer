@@ -17,4 +17,5 @@ export const config: Config = {
   tezGraph: process.env.TZGRAPH_URL || "https://ghostnet.tezgraph.ecadinfra.com/graphql",
   tezGraphWs: process.env.TZGRAPH_WS || "wss://ghostnet.tezgraph.ecadinfra.com/graphql",
   configUrl: process.env.CONFIG_URL || "https://config.plentydefi.com/v1/config",
+  networkIndexer: process.env.NETWORK_INDEXER || "https://networkanalyticsindexer.plentydefi.com",
 };

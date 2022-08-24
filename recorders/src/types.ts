@@ -20,6 +20,7 @@ export interface Config {
     host: string;
   };
   configUrl: string;
+  networkIndexer: string;
 }
 
 export interface Contracts {
@@ -81,7 +82,7 @@ export interface BlockData {
 export interface DatabaseGetParams {
   table: string;
   select: string;
-  where: string;
+  where?: string;
 }
 export interface DatabaseDeleteParams {
   table: string;
@@ -203,4 +204,47 @@ export interface AmmData {
   lqtSymbol: string;
   lqtBigMap: string;
   lqtDecimals: number;
+}
+
+export interface BribeApiResponse {
+  key: {
+    epoch: string;
+    bribe_id: string;
+  };
+  value: {
+    bribe: {
+      type: TokenType;
+      value: string;
+    };
+    provider: string;
+  };
+}
+
+export interface TokenType {
+  fa2?: {
+    nat: string;
+    address: string;
+  };
+  fa12?: string;
+  tez?: {};
+}
+
+export interface Pool {
+  amm: string;
+  lqt_token: string;
+  token1: string;
+  token2: string;
+  token1_decimals: number;
+  token2_decimals: number;
+  token1_variant: boolean;
+  token2_variant: boolean;
+  token1_symbol: string;
+  token2_symbol: string;
+  token1_id: number | undefined;
+  token2_id: number | undefined;
+  lqt_token_bigmap: string;
+  gauge: string;
+  bribe: string;
+  gauge_bigmap: string;
+  bribe_bigmap: string;
 }

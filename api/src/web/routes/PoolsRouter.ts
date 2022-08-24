@@ -6,7 +6,6 @@ function build({ dbClient, contracts, tzktProvider, getData, getAPR }: Dependeci
   const router = Router();
   router.get("/", async (req: Request, res: Response) => {
     try {
-      const tokens = (await getData()).tokens;
       const APRs = await getAPR();
       const amm = req.query.amm as string;
       if (amm) {
@@ -16,19 +15,16 @@ function build({ dbClient, contracts, tzktProvider, getData, getAPR }: Dependeci
           where: `amm='${amm}'`,
         });
         if (pools.rowCount !== 0) {
-          const currentEpoch = await tzktProvider.getCurrentEpoch(contracts.voter.address);
-          const bribes = await tzktProvider.getBribes(pools.rows[0].bribe_bigmap, currentEpoch);
-          const bribeFinal = bribes.map((data: { value: string; type: TokenType }) => {
-            const name = getToken(data.type, tokens);
-            return {
-              value: data.value,
-              name,
-            };
-          });
           const pool = pools.rows[0];
+          const currentEpoch = await tzktProvider.getCurrentEpoch(contracts.voter.address);
+          const bribes = await dbClient.getAll({
+            select: "value, price, name",
+            table: "bribes",
+            where: `amm='${pool.amm}' AND epoch='${currentEpoch}'`,
+          });
           return res.json({
             pool: getMainnetAddress(pool.amm),
-            bribes: bribeFinal,
+            bribes: bribes.rows,
             apr: APRs[pool.amm] || 0,
             previousApr: 0,
           });
@@ -44,18 +40,15 @@ function build({ dbClient, contracts, tzktProvider, getData, getAPR }: Dependeci
         if (pool.rowCount !== 0) {
           const currentEpoch = await tzktProvider.getCurrentEpoch(contracts.voter.address);
           const finalPoolsPromise = pool.rows.map(async (pool) => {
-            const bribes = await tzktProvider.getBribes(pool.bribe_bigmap, currentEpoch);
-            const bribeFinal = bribes.map((data: { value: string; type: TokenType }) => {
-              const name = getToken(data.type, tokens);
-              return {
-                value: data.value,
-                name,
-              };
+            const bribes = await dbClient.getAll({
+              select: "value, price, name",
+              table: "bribes",
+              where: `amm='${pool.amm}' AND epoch='${currentEpoch}'`,
             });
             const apr = APRs[pool.amm] || 0;
             return {
               pool: getMainnetAddress(pool.amm),
-              bribes: bribeFinal,
+              bribes: bribes.rows,
               apr,
               previousApr: 0,
             };

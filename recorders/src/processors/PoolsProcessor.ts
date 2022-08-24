@@ -1,18 +1,30 @@
 import axios from "axios";
+import { getTokens, getTokenSymbol } from "../infrastructure/utils";
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
-import { Config, Dependecies, Contracts, PoolsApiResponse, BigMapUpdateResponseType, AmmData } from "../types";
-
+import {
+  Config,
+  Dependecies,
+  Contracts,
+  PoolsApiResponse,
+  BigMapUpdateResponseType,
+  AmmData,
+  BribeApiResponse,
+  Token,
+} from "../types";
+import BribesProcessor from "./BribesProcessor";
 export default class PoolsProcessor {
   private _config: Config;
   private _dbClient: DatabaseClient;
   private _tkztProvider: TzktProvider;
   private _contracts: Contracts;
-  constructor({ config, dbClient, tzktProvider, contracts }: Dependecies) {
+  private _bribesProcessor: BribesProcessor;
+  constructor({ config, dbClient, tzktProvider, contracts }: Dependecies, bribesProcessor: BribesProcessor) {
     this._config = config;
     this._dbClient = dbClient;
     this._tkztProvider = tzktProvider;
     this._contracts = contracts;
+    this._bribesProcessor = bribesProcessor;
   }
 
   async process(): Promise<void> {
@@ -37,12 +49,16 @@ export default class PoolsProcessor {
   }
   private async _processPool(pool: PoolsApiResponse): Promise<void> {
     try {
+      //get Token Data
+      const tokens = await getTokens(this._config);
       //get AMM data (lqtTokenAddress, token1Address and token2Address)
       const ammData = await this.getAmmData(pool.key);
       //get gaugeBigMap
       const gaugeBigMap = await this._tkztProvider.getGaugeBigMap(pool.value.gauge);
       //get bribeBigMap
       const bribeBigMap = await this._tkztProvider.getBribeBigMap(pool.value.bribe);
+      //process all bribes
+      await this._bribesProcessor.process(bribeBigMap, pool.key, tokens);
       //save in db
       console.log(`Inseting Pool ${pool.key}`);
       this._dbClient.insert({
@@ -60,6 +76,7 @@ export default class PoolsProcessor {
     try {
       const result = (
         await axios.get(this._config.configUrl + "/amm?network=testnet", {
+          //todo change to mainnnet
           headers: {
             "User-Agent":
               "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",

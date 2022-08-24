@@ -51,6 +51,18 @@ export default class DatabaseClient {
           bribe_BigMap VARCHAR(100) NOT NULL
         );`
       );
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS bribes (
+          amm VARCHAR(50) NOT NULL,
+          epoch VARCHAR(50) NOT NULL,
+          bribe_id VARCHAR(50) NOT NULL,
+          provider VARCHAR(50) NOT NULL,
+          value VARCHAR(100) NOT NULL,
+          price VARCHAR(100) NOT NULL,
+          name VARCHAR(50) NOT NULL,
+          PRIMARY KEY (epoch, amm, bribe_id)
+        );`
+      );
     } catch (err) {
       throw err;
     }
@@ -70,6 +82,14 @@ export default class DatabaseClient {
   async getAll(params: DatabaseGetParams): Promise<QueryResult<any>> {
     try {
       const res = await this._dbClient.query(`SELECT ${params.select} FROM ${params.table} WHERE ${params.where};`);
+      return res;
+    } catch (err) {
+      throw err;
+    }
+  }
+  async getAllNoQuery(params: DatabaseGetParams): Promise<QueryResult<any>> {
+    try {
+      const res = await this._dbClient.query(`SELECT ${params.select} FROM ${params.table};`);
       return res;
     } catch (err) {
       throw err;

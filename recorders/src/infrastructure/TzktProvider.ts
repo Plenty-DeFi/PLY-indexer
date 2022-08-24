@@ -1,7 +1,14 @@
 import qs from "qs";
 import axios from "axios";
 
-import { Config, GetBigMapUpdatesParameters, GetTransactionParameters, PoolsApiResponse, Transaction } from "../types";
+import {
+  BribeApiResponse,
+  Config,
+  GetBigMapUpdatesParameters,
+  GetTransactionParameters,
+  PoolsApiResponse,
+  Transaction,
+} from "../types";
 
 export default class TzktProvider {
   private _tzktURL: string;
@@ -172,6 +179,25 @@ export default class TzktProvider {
       });
 
       return res.data.epoch_bribes.toString();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getBribes(params: { bigMap: string; limit: number; offset: number }): Promise<BribeApiResponse[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          limit: params.limit,
+          offset: params.offset,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
     } catch (err) {
       throw err;
     }

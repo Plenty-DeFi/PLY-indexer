@@ -6,7 +6,6 @@ function build({ dbClient, contracts, tzktProvider, getData }: Dependecies): Rou
   const router = Router();
   router.get("/", async (req: Request, res: Response) => {
     try {
-      const tokens = (await getData()).tokens;
       const epoch = req.query.epoch as string;
       if (epoch) {
         let pools = [];
@@ -16,17 +15,15 @@ function build({ dbClient, contracts, tzktProvider, getData }: Dependecies): Rou
         });
         if (pool.rowCount !== 0) {
           const finalPoolsPromise = pool.rows.map(async (pool) => {
-            const bribes = await tzktProvider.getBribes(pool.bribe_bigmap, epoch);
-            const bribeFinal = bribes.map((data: { value: string; type: TokenType }) => {
-              const name = getToken(data.type, tokens);
-              return {
-                value: data.value,
-                name,
-              };
+            const bribes = await dbClient.getAll({
+              select: "value, price, name",
+              table: "bribes",
+              where: `amm='${pool.amm}' AND epoch='${epoch}'`,
             });
+
             return {
               pool: getMainnetAddress(pool.amm),
-              bribes: bribeFinal,
+              bribes: bribes.rows,
             };
           });
 
