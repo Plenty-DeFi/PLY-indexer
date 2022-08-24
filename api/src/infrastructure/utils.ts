@@ -7,7 +7,7 @@ const TzktObj = new TzktProvider(config);
 
 export const votingPower = async (tokenId: number, ts2: number, time: number) => {
   try {
-    let factor: number = 7 * 86400;
+    let factor: number = 7 * 480;
     if (time === 0) {
       factor = 1;
     }
