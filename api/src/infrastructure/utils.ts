@@ -166,7 +166,7 @@ export const calculateAPR = async (
   console.log("plyDollar", plyDollarValue.toString(), amm_supply);
 
   const apr = new BigNumber(plyDollarValue).div(poolDollarValue).times(100 * 52);
-  return apr.toString();
+  return isNaN(apr.toNumber()) ? "0" : apr.toString();
 };
 
 export const getMainnetAddress = (amm: string) => {

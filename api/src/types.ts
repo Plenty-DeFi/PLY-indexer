@@ -114,6 +114,7 @@ export interface Dependecies {
   tzktProvider: TzktProvider;
   contracts: Contracts;
   getData: () => Promise<Data>;
+  getAPR: () => Promise<APR>;
 }
 
 export interface BlockData {

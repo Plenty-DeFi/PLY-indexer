@@ -2,11 +2,12 @@ import { Request, Response, Router } from "express";
 import { Dependecies, TokenType } from "../../types";
 import { calculateAPR, getMainnetAddress, getRealEmission, getToken } from "../../infrastructure/utils";
 
-function build({ dbClient, config, contracts, tzktProvider, getData }: Dependecies): Router {
+function build({ dbClient, contracts, tzktProvider, getData, getAPR }: Dependecies): Router {
   const router = Router();
   router.get("/", async (req: Request, res: Response) => {
     try {
       const tokens = (await getData()).tokens;
+      const APRs = await getAPR();
       const amm = req.query.amm as string;
       if (amm) {
         const pools = await dbClient.get({
@@ -24,13 +25,11 @@ function build({ dbClient, config, contracts, tzktProvider, getData }: Dependeci
               name,
             };
           });
-          const realEmission = await getRealEmission(tzktProvider, contracts);
-          const apr = await calculateAPR(contracts, tzktProvider, pools.rows[0], currentEpoch, realEmission);
           const pool = pools.rows[0];
           return res.json({
             pool: getMainnetAddress(pool.amm),
             bribes: bribeFinal,
-            apr,
+            apr: APRs[pool.amm] || 0,
             previousApr: 0,
           });
         } else {
@@ -44,7 +43,6 @@ function build({ dbClient, config, contracts, tzktProvider, getData }: Dependeci
         });
         if (pool.rowCount !== 0) {
           const currentEpoch = await tzktProvider.getCurrentEpoch(contracts.voter.address);
-          const realEmission = await getRealEmission(tzktProvider, contracts);
           const finalPoolsPromise = pool.rows.map(async (pool) => {
             const bribes = await tzktProvider.getBribes(pool.bribe_bigmap, currentEpoch);
             const bribeFinal = bribes.map((data: { value: string; type: TokenType }) => {
@@ -54,7 +52,7 @@ function build({ dbClient, config, contracts, tzktProvider, getData }: Dependeci
                 name,
               };
             });
-            const apr = await calculateAPR(contracts, tzktProvider, pool, currentEpoch, realEmission);
+            const apr = APRs[pool.amm] || 0;
             return {
               pool: getMainnetAddress(pool.amm),
               bribes: bribeFinal,
