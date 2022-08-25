@@ -39,8 +39,8 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
       const finalLocksPromise = locks.rows.map(async (lock) => {
         //const contract = await tezos.contract.at(contracts.voteEscrow.address);
         const date = Math.round(new Date().getTime() / 1000);
-        const epochtVotingPower = await votingPower(lock.id, date, 1);
-        const currentVotingPower = await votingPower(lock.id, date, 0);
+        const epochtVotingPower = (await votingPower(lock.id, date, 1)).toFixed();
+        const currentVotingPower = (await votingPower(lock.id, date, 0)).toFixed();
         const currentEpoch = await tzktProvider.getCurrentEpoch(contracts.voter.address);
         const usedVotingPower = await tzktProvider.getTokenVotes(
           contracts.bigMaps.total_token_votes.toString(),
@@ -56,7 +56,7 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
           attached: lock.attached,
           epochtVotingPower,
           currentVotingPower,
-          availableVotingPower: new BigNumber(epochtVotingPower).minus(new BigNumber(usedVotingPower)).toString(),
+          availableVotingPower: new BigNumber(epochtVotingPower).minus(new BigNumber(usedVotingPower)).toFixed(),
         };
       });
       finalLocks = await Promise.all(finalLocksPromise);
