@@ -21,7 +21,8 @@
     "claim_ledger": 162774,
     "amm_to_gauge_bribe": 162784,
     "total_amm_votes": 162787,
-    "total_epoch_votes": 162788
+    "total_epoch_votes": 162788,
+    "total_token_votes": 162789
   },
   "EMISSION_FACTOR": 5
 }

@@ -63,17 +63,20 @@ export interface Contracts {
     amm_to_gauge_bribe: number;
     total_amm_votes: number;
     total_epoch_votes: number;
+    total_token_votes: number;
   };
   EMISSION_FACTOR: number;
 }
 
 export interface Lock {
   owner: string;
-  tokenId: string;
-  base_value: string;
-  end: string;
+  id: string;
+  baseValue: string;
+  endTs: string;
   attached: boolean;
-  voting_power: string;
+  epochtVotingPower: string;
+  currentVotingPower: string;
+  availableVotingPower: string;
 }
 
 export interface Pool {

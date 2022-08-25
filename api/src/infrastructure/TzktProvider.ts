@@ -138,6 +138,28 @@ export default class TzktProvider {
     }
   }
 
+  async getTokenVotes(bigmap: string, epoch: string, tokenId: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${bigmap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key.epoch"]: epoch,
+          ["key.token_id"]: tokenId,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      if (res.data.length === 0) {
+        return "0";
+      } else {
+        return res.data[0].value;
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getEpochVotes(bigmap: string, epoch: string): Promise<string> {
     try {
       const res = await axios.get(`${this._tzktURL}/bigmaps/${bigmap}/keys`, {

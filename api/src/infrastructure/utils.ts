@@ -7,7 +7,7 @@ const TzktObj = new TzktProvider(config);
 
 export const votingPower = async (tokenId: number, ts2: number, time: number) => {
   try {
-    let factor: number = 7 * 480;
+    let factor: number = 7 * 480; // todo change later to 7 * 86400
     if (time === 0) {
       factor = 1;
     }
@@ -23,7 +23,7 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
     }
 
     if (ts < map1.get("1").ts) {
-      throw "Too early timestamp";
+      throw "0";
     }
 
     const sec = await TzktObj.getNumTokenCheckpoints(tokenId);
