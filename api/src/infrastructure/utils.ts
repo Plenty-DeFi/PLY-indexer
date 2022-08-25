@@ -149,9 +149,9 @@ export const calculateAPR = async (
 
   const amm_supply = await tzktProvider.getAmmPoolValues(pool.amm);
 
-  const token1Price = getPrice(pool.token1, pool.token1_id.toString());
+  const token1Price = getPrice(pool.token1, pool.token1_id?.toString());
 
-  const token2Price = getPrice(pool.token2, pool.token2_id.toString());
+  const token2Price = getPrice(pool.token2, pool.token2_id?.toString());
 
   const token1DollarValue = new BigNumber(amm_supply.token1Pool)
     .multipliedBy(token1Price)
@@ -172,7 +172,7 @@ export const calculateAPR = async (
 export const getMainnetAddress = (amm: string) => {
   if (amm == "KT1Px1JEGhrUNdojjS6QHrTWXLdWVwWByCiB") {
     return "KT1PU4Ce89RyF1itwYxknVNcvtUWKdKy6rvQ";
-  } else if ((amm = "KT1XLpc153VJL1mMsmgfZ9Ff2ANSD3qVDtcV")) {
+  } else if (amm == "KT1XLpc153VJL1mMsmgfZ9Ff2ANSD3qVDtcV") {
     return "KT1Qs52cCz1gLK8LYi6cZJm7YjExg6MYLdkG";
   } else if (amm == "KT1SUT6U8qpKDKjfYkZaNTwdF544Gfzmrzyk") {
     return "KT1Dhy1gVW3PSC9cms9QJ7xPMPPpip2V9aA6";

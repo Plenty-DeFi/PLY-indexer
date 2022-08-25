@@ -65,7 +65,15 @@ export default class PoolsProcessor {
         table: "pools",
         columns:
           "(amm, type, lqt_decimals, lqt_symbol, lqt_Token, token1, token2, token1_variant, token2_variant, token1_decimals, token2_decimals, token1_Id, token2_Id, token1_symbol, token2_symbol, lqt_Token_BigMap, gauge, bribe, gauge_BigMap, bribe_BigMap)",
-        values: `('${pool.key}', '${ammData.type}', ${ammData.lqtDecimals}, '${ammData.lqtSymbol}', '${ammData.lqtAddress}', '${ammData.token1.address}', '${ammData.token2.address}', '${ammData.token1.variant}', '${ammData.token2.variant}', '${ammData.token1.decimals}', '${ammData.token2.decimals}', ${ammData.token1.tokenId}, ${ammData.token2.tokenId}, '${ammData.token1.symbol}', '${ammData.token2.symbol}', '${ammData.lqtBigMap}', '${pool.value.gauge}', '${pool.value.bribe}', '${gaugeBigMap}', '${bribeBigMap}')`,
+        values: `('${pool.key}', '${ammData.type}', ${ammData.lqtDecimals}, '${ammData.lqtSymbol}', '${
+          ammData.lqtAddress
+        }', '${ammData.token1.address}', '${ammData.token2.address}', '${ammData.token1.variant}', '${
+          ammData.token2.variant
+        }', '${ammData.token1.decimals}', '${ammData.token2.decimals}', ${ammData.token1.tokenId || null}, ${
+          ammData.token2.tokenId || null
+        }, '${ammData.token1.symbol}', '${ammData.token2.symbol}', '${ammData.lqtBigMap}', '${pool.value.gauge}', '${
+          pool.value.bribe
+        }', '${gaugeBigMap}', '${bribeBigMap}')`,
       });
     } catch (e) {
       console.log(e);
