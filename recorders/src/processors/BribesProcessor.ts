@@ -54,7 +54,7 @@ export default class BribesProcessor {
       const tokenSymbol = getTokenSymbol(bribe.value.bribe.type, tokens);
       /*       const price = (await axios.get(this._config.networkIndexer + "/analytics/tokens/" + tokenSymbol)).data[0].price
         .value; */
-      const price = "1";
+      const price = "1"; //todo change later
       console.log("Inserting Bribe", amm, tokenSymbol, bribe.value.bribe.value, price);
       await this._dbClient.insert({
         table: "bribes",

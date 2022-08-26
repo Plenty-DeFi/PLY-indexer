@@ -100,6 +100,7 @@ export default class TzktProvider {
       const res = await axios.get(`${this._tzktURL}/bigmaps/${bigMap}/keys`, {
         params: {
           select: "key,value",
+          active: "true",
         },
         paramsSerializer: (params) => {
           return qs.stringify(params, { arrayFormat: "repeat" });
