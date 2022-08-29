@@ -23,7 +23,7 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
     }
 
     if (ts < map1.get("1").ts) {
-      throw "0";
+      throw 0;
     }
 
     const sec = await TzktObj.getNumTokenCheckpoints(tokenId);
