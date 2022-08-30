@@ -23,7 +23,7 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
     }
 
     if (ts < map1.get("1").ts) {
-      throw 0;
+      throw "0";
     }
 
     const sec = await TzktObj.getNumTokenCheckpoints(tokenId);
@@ -39,9 +39,9 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
           .dividedBy(10 ** 18)
       );
       if (f_bias < new BigNumber(0)) {
-        return 0;
+        return "0";
       } else {
-        return f_bias.toNumber();
+        return f_bias.decimalPlaces(0,1).toString();
       }
     } else {
       let high = Number(sec) - 2;
@@ -57,13 +57,13 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
         }
       }
       if (map1.get(`${mid + 1}`).ts === ts) {
-        return map1.get(mid + 1).bias;
+        return map1.get(mid + 1).bias.toString();
       } else {
         const ob = map1.get(`${low + 1}`);
         const bias = new BigNumber(ob.bias);
         const slope = new BigNumber(ob.slope);
         const d_ts = ts.minus(ob.ts);
-        return bias.minus(d_ts.multipliedBy(slope).dividedBy(10 ** 18)).toNumber();
+        return bias.minus(d_ts.multipliedBy(slope).dividedBy(10 ** 18)).decimalPLaces(0,1).toString();
       }
     }
   } catch (e) {
