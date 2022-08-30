@@ -7,7 +7,9 @@ const TzktObj = new TzktProvider(config);
 
 export const votingPower = async (tokenId: number, ts2: number, time: number) => {
   try {
-    let factor: number = 7 * 86400;
+//     TODO: Uncomment on mainnet launch
+//     let factor: number = 7 * 86400;
+    let factor: number = 7 * 480;
     if (time === 0) {
       factor = 1;
     }
@@ -39,9 +41,9 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
           .dividedBy(10 ** 18)
       );
       if (f_bias < new BigNumber(0)) {
-        return 0;
+        return "0";
       } else {
-        return f_bias.toNumber();
+        return f_bias.decimalPlaces(0,1).toString();
       }
     } else {
       let high = Number(sec) - 2;
@@ -63,7 +65,7 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
         const bias = new BigNumber(ob.bias);
         const slope = new BigNumber(ob.slope);
         const d_ts = ts.minus(ob.ts);
-        return bias.minus(d_ts.multipliedBy(slope).dividedBy(10 ** 18)).toNumber();
+        return bias.minus(d_ts.multipliedBy(slope).dividedBy(10 ** 18)).decimalPlaces(0,1).toString();
       }
     }
   } catch (e) {
