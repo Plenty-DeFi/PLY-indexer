@@ -41,7 +41,7 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
       if (f_bias < new BigNumber(0)) {
         return "0";
       } else {
-        return f_bias.decimalPlaces(0,1).toString();
+        return f_bias.decimalPlaces(0, 1).toString();
       }
     } else {
       let high = Number(sec) - 2;
@@ -63,7 +63,10 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
         const bias = new BigNumber(ob.bias);
         const slope = new BigNumber(ob.slope);
         const d_ts = ts.minus(ob.ts);
-        return bias.minus(d_ts.multipliedBy(slope).dividedBy(10 ** 18)).decimalPLaces(0,1).toString();
+        return bias
+          .minus(d_ts.multipliedBy(slope).dividedBy(10 ** 18))
+          .decimalPlaces(0, 1)
+          .toString();
       }
     }
   } catch (e) {
