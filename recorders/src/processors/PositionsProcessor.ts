@@ -23,9 +23,9 @@ export default class PositionsProcessor {
     this._dbClient = dbClient;
     this._tkztProvider = tzktProvider;
   }
-  async process(amm: string, gaugeBigMap: string, lqtBigMap: string) {
+  async process(amm: string, gaugeBigMap: string, derivedBigMap: string, attachBigMap: string, lqtBigMap: string) {
     try {
-      console.log("Positions processing started for", amm);
+      console.log("Positions processing started for", amm, gaugeBigMap, lqtBigMap);
       let offset = 0;
       while (true) {
         const lqtBalances = await this._tkztProvider.getLqtBalances({
@@ -37,7 +37,14 @@ export default class PositionsProcessor {
           break;
         } else {
           lqtBalances.forEach(async (balance) => {
-            await this._processPosition(balance.key, balance.value.balance, amm, gaugeBigMap);
+            await this._processPosition(
+              balance.key,
+              balance.value.balance,
+              amm,
+              gaugeBigMap,
+              derivedBigMap,
+              attachBigMap
+            );
             offset += this._config.tzktOffset;
           });
         }
@@ -47,25 +54,38 @@ export default class PositionsProcessor {
     }
   }
 
-  private async _processPosition(userAddress: string, balance: string, amm: string, gaugeBigMap: string) {
+  private async _processPosition(
+    userAddress: string,
+    balance: string,
+    amm: string,
+    gaugeBigMap: string,
+    derivedBigMap: string,
+    attachBigMap: string
+  ) {
     try {
       const stakedBalance = await this._tkztProvider.getStakeBalance({
         bigMap: gaugeBigMap,
+        address: userAddress,
+      });
+      const derivedBalance = await this._tkztProvider.getStakeBalance({
+        bigMap: derivedBigMap,
         address: userAddress,
       });
 
       const existingPos = await this._dbClient.get({
         select: "*",
         table: "positions",
-        where: `amm = '${amm}' AND user = '${userAddress}'`,
+        where: `amm = '${amm}' AND user_address = '${userAddress}'`,
       });
       if (existingPos.rowCount === 0) {
-        if (stakedBalance !== "0" && balance !== "0") {
-          console.log("Inserting Position", amm, userAddress, balance, stakedBalance);
+        if (stakedBalance === "0" && balance === "0") {
+          console.log("Skipping Position", amm, userAddress, balance, stakedBalance, derivedBalance);
+        } else {
+          console.log("Inserting Position", amm, userAddress, balance, stakedBalance, derivedBalance);
           this._dbClient.insert({
             table: "positions",
-            columns: "(amm, user, balance, staked_balance)",
-            values: `(${amm}, '${userAddress}', '${balance}', '${stakedBalance}')`,
+            columns: "(amm, user_address, balance, staked_balance, derived_balance, attach_BigMap)",
+            values: `('${amm}', '${userAddress}', '${balance}', '${stakedBalance}', '${derivedBalance}', '${attachBigMap}')`,
           });
         }
       } else {
@@ -73,14 +93,14 @@ export default class PositionsProcessor {
           console.log("Deleting Positions", amm, userAddress);
           this._dbClient.delete({
             table: "positions",
-            where: `amm = '${amm}' AND user = '${userAddress}'`,
+            where: `amm = '${amm}' AND user_address = '${userAddress}'`,
           });
         } else {
-          console.log("Updating Positions", amm, userAddress, balance, stakedBalance);
+          console.log("Updating Positions", amm, userAddress, balance, stakedBalance, derivedBalance);
           this._dbClient.update({
             table: "positions",
-            set: `balance='${balance}', staked_balance='${stakedBalance}'`,
-            where: `amm = '${amm}' AND user = '${userAddress}`,
+            set: `balance='${balance}', staked_balance='${stakedBalance}', derived_balance='${derivedBalance}'`,
+            where: `amm = '${amm}' AND user_address = '${userAddress}'`,
           });
         }
       }
@@ -115,7 +135,9 @@ export default class PositionsProcessor {
                 update.content.key,
                 update.content.value.balance,
                 pool.amm,
-                pool.gauge_bigmap
+                pool.gauge_bigmap,
+                pool.derived_bigmap,
+                pool.attach_bigmap
               );
             });
             offset += this._config.tzktOffset;

@@ -55,6 +55,8 @@ export default class DatabaseClient {
           gauge VARCHAR(50) NOT NULL,
           bribe VARCHAR(50) NOT NULL,
           gauge_BigMap VARCHAR(100) NOT NULL,
+          attach_BigMap VARCHAR(100) NOT NULL,
+          derived_BigMap VARCHAR(100) NOT NULL,
           bribe_BigMap VARCHAR(100) NOT NULL
         );`
       );
@@ -73,10 +75,12 @@ export default class DatabaseClient {
       await this._dbClient.query(
         `CREATE TABLE IF NOT EXISTS positions (
           amm VARCHAR(50) NOT NULL,
-          user VARCHAR(50) NOT NULL,
+          user_address VARCHAR(50) NOT NULL,
           balance VARCHAR(50) NOT NULL,
           staked_balance VARCHAR(50) NOT NULL,
-          PRIMARY KEY (amm, user)
+          derived_balance VARCHAR(50) NOT NULL,
+          attach_BigMap VARCHAR(50) NOT NULL,
+          PRIMARY KEY (amm, user_address)
         );`
       );
     } catch (err) {

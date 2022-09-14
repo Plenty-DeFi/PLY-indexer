@@ -275,4 +275,6 @@ export interface Pool {
   bribe: string;
   gauge_bigmap: string;
   bribe_bigmap: string;
+  attach_bigmap: string;
+  derived_bigmap: string;
 }

@@ -61,19 +61,20 @@ export default class PoolsProcessor {
       //get AMM data (lqtTokenAddress, token1Address and token2Address)
       const ammData = await this.getAmmData(pool.key);
       //get gaugeBigMap
-      const gaugeBigMap = await this._tkztProvider.getGaugeBigMap(pool.value.gauge);
+      const { gaugeBigMap, derivedBigMap, attachBigMap } = await this._tkztProvider.getGaugeBigMap(pool.value.gauge);
       //get bribeBigMap
       const bribeBigMap = await this._tkztProvider.getBribeBigMap(pool.value.bribe);
       //process all bribes
       await this._bribesProcessor.process(bribeBigMap, pool.key, tokens);
       //process all position
-      await this._positionProcessor.process(pool.key, gaugeBigMap, ammData.lqtBigMap);
+      await this._positionProcessor.process(pool.key, gaugeBigMap, derivedBigMap, attachBigMap, ammData.lqtBigMap);
+
       //save in db
       console.log(`Inseting Pool ${pool.key}`);
       this._dbClient.insert({
         table: "pools",
         columns:
-          "(amm, type, lqt_decimals, lqt_symbol, lqt_Token, token1, token2, token1_variant, token2_variant, token1_decimals, token2_decimals, token1_Id, token2_Id, token1_symbol, token2_symbol, lqt_Token_BigMap, gauge, bribe, gauge_BigMap, bribe_BigMap)",
+          "(amm, type, lqt_decimals, lqt_symbol, lqt_Token, token1, token2, token1_variant, token2_variant, token1_decimals, token2_decimals, token1_Id, token2_Id, token1_symbol, token2_symbol, lqt_Token_BigMap, gauge, bribe, gauge_BigMap, attach_BigMap, derived_BigMap, bribe_BigMap)",
         values: `('${pool.key}', '${ammData.type}', ${ammData.lqtDecimals}, '${ammData.lqtSymbol}', '${
           ammData.lqtAddress
         }', '${ammData.token1.address}', '${ammData.token2.address}', '${ammData.token1.variant}', '${
@@ -82,7 +83,7 @@ export default class PoolsProcessor {
           ammData.token2.tokenId || null
         }, '${ammData.token1.symbol}', '${ammData.token2.symbol}', '${ammData.lqtBigMap}', '${pool.value.gauge}', '${
           pool.value.bribe
-        }', '${gaugeBigMap}', '${bribeBigMap}')`,
+        }', '${gaugeBigMap}', '${attachBigMap}', '${derivedBigMap}', '${bribeBigMap}')`,
       });
     } catch (e) {
       console.log(e);

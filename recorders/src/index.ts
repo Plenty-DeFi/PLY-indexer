@@ -6,7 +6,7 @@ import BlockListener from "./infrastructure/Blocklistener";
 import HeartBeat from "./infrastructure/Heartbeat";
 import LocksProcessor from "./processors/LocksProcessor";
 import BribesProcessor from "./processors/BribesProcessor";
-import PositionsProcessor from "processors/PositionsProcessor";
+import PositionsProcessor from "./processors/PositionsProcessor";
 
 const dependencies = buildDependencies(config);
 
@@ -29,6 +29,7 @@ const blockListener = new BlockListener(config);
         locksProcesser.updateLocks(b.level);
         poolsProcessor.updatePools(b.level);
         bribesProcessor.updateBribes(b.level);
+        positionProcessor.updatePositions(b.level);
       }, 5000);
     });
   } catch (err) {

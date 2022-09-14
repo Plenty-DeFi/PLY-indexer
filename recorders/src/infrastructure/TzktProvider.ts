@@ -158,7 +158,11 @@ export default class TzktProvider {
     }
   }
 
-  async getGaugeBigMap<T>(gauge: string): Promise<string> {
+  async getGaugeBigMap<T>(gauge: string): Promise<{
+    gaugeBigMap: string;
+    attachBigMap: string;
+    derivedBigMap: string;
+  }> {
     try {
       const res = await axios.get(`${this._tzktURL}/contracts/${gauge}/storage`, {
         paramsSerializer: (params) => {
@@ -166,7 +170,11 @@ export default class TzktProvider {
         },
       });
 
-      return res.data.balances.toString();
+      return {
+        gaugeBigMap: res.data.balances.toString(),
+        attachBigMap: res.data.attached_tokens.toString(),
+        derivedBigMap: res.data.derived_balances.toString(),
+      };
     } catch (err) {
       throw err;
     }
@@ -217,7 +225,7 @@ export default class TzktProvider {
         },
       });
       if (res.data.length > 0) {
-        return res.data.value;
+        return res.data[0].value;
       } else {
         return "0";
       }

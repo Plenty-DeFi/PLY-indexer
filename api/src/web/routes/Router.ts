@@ -3,6 +3,7 @@ import LocksRouter from "./LocksRouter";
 import LockVotingPowerRouter from "./LockVotingPower";
 import PoolsRouter from "./PoolsRouter";
 import BribesRouter from "./BribesRouter";
+import PositionsRouter from "./PositionsRouter";
 
 import { Dependecies } from "../../types";
 
@@ -12,6 +13,7 @@ function build(dependencies: Dependecies): Router {
   router.use("/voting-power", LockVotingPowerRouter(dependencies));
   router.use("/pools", PoolsRouter(dependencies));
   router.use("/bribes", BribesRouter(dependencies));
+  router.use("/positions", PositionsRouter(dependencies));
   return router;
 }
 
