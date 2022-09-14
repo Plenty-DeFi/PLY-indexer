@@ -130,7 +130,7 @@ export default class PositionsProcessor {
           if (updates.length === 0) {
             break;
           } else {
-            updates.forEach(async (update) => {
+            for (const update of updates) {
               await this._processPosition(
                 update.content.key,
                 update.content.value.balance,
@@ -139,7 +139,7 @@ export default class PositionsProcessor {
                 pool.derived_bigmap,
                 pool.attach_bigmap
               );
-            });
+            }
             offset += this._config.tzktOffset;
           }
         }
