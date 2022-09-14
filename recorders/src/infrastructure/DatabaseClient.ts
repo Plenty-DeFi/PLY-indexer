@@ -1,6 +1,13 @@
 import { Client, QueryResult } from "pg";
 
-import { Config, DatabaseDeleteParams, DatabaseGetParams, DatabaseInsertParams, DatabaseUpdateParams } from "../types";
+import {
+  Config,
+  DatabaseDeleteParams,
+  DatabaseGetParams,
+  DatabaseInsertParams,
+  DatabaseInsertUpdateParams,
+  DatabaseUpdateParams,
+} from "../types";
 
 export default class DatabaseClient {
   private _dbClient: Client;
@@ -61,6 +68,15 @@ export default class DatabaseClient {
           price VARCHAR(100) NOT NULL,
           name VARCHAR(50) NOT NULL,
           PRIMARY KEY (epoch, amm, bribe_id)
+        );`
+      );
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS positions (
+          amm VARCHAR(50) NOT NULL,
+          user VARCHAR(50) NOT NULL,
+          balance VARCHAR(50) NOT NULL,
+          staked_balance VARCHAR(50) NOT NULL,
+          PRIMARY KEY (amm, user)
         );`
       );
     } catch (err) {

@@ -6,13 +6,15 @@ import BlockListener from "./infrastructure/Blocklistener";
 import HeartBeat from "./infrastructure/Heartbeat";
 import LocksProcessor from "./processors/LocksProcessor";
 import BribesProcessor from "./processors/BribesProcessor";
+import PositionsProcessor from "processors/PositionsProcessor";
 
 const dependencies = buildDependencies(config);
 
 const heartbeat = new HeartBeat(config);
 const locksProcesser = new LocksProcessor(dependencies);
 const bribesProcessor = new BribesProcessor(dependencies);
-const poolsProcessor = new PoolsProcessor(dependencies, bribesProcessor);
+const positionProcessor = new PositionsProcessor(dependencies);
+const poolsProcessor = new PoolsProcessor(dependencies, bribesProcessor, positionProcessor);
 const blockListener = new BlockListener(config);
 (async () => {
   try {
@@ -23,9 +25,11 @@ const blockListener = new BlockListener(config);
     blockListener.listen();
     blockListener.blockEmitter.on("newBlock", (b: BlockData) => {
       console.log("YAY block listener got a new block", b.level, b.hash);
-      locksProcesser.updateLocks(b.level);
-      poolsProcessor.updatePools(b.level);
-      bribesProcessor.updateBribes(b.level);
+      setTimeout(function () {
+        locksProcesser.updateLocks(b.level);
+        poolsProcessor.updatePools(b.level);
+        bribesProcessor.updateBribes(b.level);
+      }, 5000);
     });
   } catch (err) {
     console.error(err.message);

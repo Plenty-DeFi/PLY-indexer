@@ -13,18 +13,25 @@ import {
   Token,
 } from "../types";
 import BribesProcessor from "./BribesProcessor";
+import PositionsProcessor from "./PositionsProcessor";
 export default class PoolsProcessor {
   private _config: Config;
   private _dbClient: DatabaseClient;
   private _tkztProvider: TzktProvider;
   private _contracts: Contracts;
   private _bribesProcessor: BribesProcessor;
-  constructor({ config, dbClient, tzktProvider, contracts }: Dependecies, bribesProcessor: BribesProcessor) {
+  private _positionProcessor: PositionsProcessor;
+  constructor(
+    { config, dbClient, tzktProvider, contracts }: Dependecies,
+    bribesProcessor: BribesProcessor,
+    positionProcessor: PositionsProcessor
+  ) {
     this._config = config;
     this._dbClient = dbClient;
     this._tkztProvider = tzktProvider;
     this._contracts = contracts;
     this._bribesProcessor = bribesProcessor;
+    this._positionProcessor = positionProcessor;
   }
 
   async process(): Promise<void> {
@@ -59,6 +66,8 @@ export default class PoolsProcessor {
       const bribeBigMap = await this._tkztProvider.getBribeBigMap(pool.value.bribe);
       //process all bribes
       await this._bribesProcessor.process(bribeBigMap, pool.key, tokens);
+      //process all position
+      await this._positionProcessor.process(pool.key, gaugeBigMap, ammData.lqtBigMap);
       //save in db
       console.log(`Inseting Pool ${pool.key}`);
       this._dbClient.insert({

@@ -6,6 +6,7 @@ import {
   Config,
   GetBigMapUpdatesParameters,
   GetTransactionParameters,
+  LqtBalancesApiResponse,
   PoolsApiResponse,
   Transaction,
 } from "../types";
@@ -180,6 +181,46 @@ export default class TzktProvider {
       });
 
       return res.data.epoch_bribes.toString();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getLqtBalances(params: { bigMap: string; limit: number; offset: number }): Promise<LqtBalancesApiResponse[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          limit: params.limit,
+          offset: params.offset,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getStakeBalance(params: { bigMap: string; address: string }): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          key: params.address,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      if (res.data.length > 0) {
+        return res.data.value;
+      } else {
+        return "0";
+      }
     } catch (err) {
       throw err;
     }

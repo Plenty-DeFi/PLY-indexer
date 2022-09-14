@@ -95,6 +95,13 @@ export interface DatabaseInsertParams {
   values: string;
 }
 
+export interface DatabaseInsertUpdateParams {
+  table: string;
+  columns: string;
+  values: string;
+  update: string;
+}
+
 export interface PoolsApiResponse {
   key: string;
   value: {
@@ -204,6 +211,27 @@ export interface AmmData {
   lqtSymbol: string;
   lqtBigMap: string;
   lqtDecimals: number;
+}
+
+export interface BribeApiResponse {
+  key: {
+    epoch: string;
+    bribe_id: string;
+  };
+  value: {
+    bribe: {
+      type: TokenType;
+      value: string;
+    };
+    provider: string;
+  };
+}
+
+export interface LqtBalancesApiResponse {
+  key: string;
+  value: {
+    balance: string;
+  };
 }
 
 export interface BribeApiResponse {
