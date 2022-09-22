@@ -93,9 +93,10 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
           };
         });
         const finalResponse = await Promise.all(response);
-        return res.json(finalResponse);
+        return res.json(finalResponse.filter((x) => x.votesUnclaimed.length !== 0));
+      } else {
+        return res.json([]);
       }
-      return res.json([]);
     } catch (e) {
       console.log(e);
 
