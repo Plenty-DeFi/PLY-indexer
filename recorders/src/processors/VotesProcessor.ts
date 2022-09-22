@@ -76,7 +76,7 @@ export default class VotesProcessor {
           break;
         } else {
           total_amm_votes.forEach(async (votes) => {
-            const bribes = await this._dbClient.get({
+            const bribes = await this._dbClient.getAll({
               select: "*",
               table: "bribes",
               where: `amm='${votes.key.amm}' AND epoch='${votes.key.epoch}'`,
@@ -253,7 +253,7 @@ export default class VotesProcessor {
           break;
         } else {
           total_amm_votes.forEach(async (votes) => {
-            const bribes = await this._dbClient.get({
+            const bribes = await this._dbClient.getAll({
               select: "*",
               table: "bribes",
               where: `amm='${votes.key.amm}' AND epoch='${votes.key.epoch}'`,

@@ -49,8 +49,8 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
               const token1_fee = new BigNumber(feesEpoch.rows[0].token1_fee).multipliedBy(voteShare);
               const token2_fee = new BigNumber(feesEpoch.rows[0].token2_fee).multipliedBy(voteShare);
               fee = {
-                token1Fee: token1_fee.toFixed(),
-                token2Fee: token2_fee.toFixed(),
+                token1Fee: token1_fee.toFixed(0),
+                token2Fee: token2_fee.toFixed(0),
                 token1Symbol: feesEpoch.rows[0].token1_symbol,
                 token2Symbol: feesEpoch.rows[0].token2_symbol,
               };
@@ -58,7 +58,7 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
 
             const bribesRes = tokenVote.bribes_unclaimed.map(async (bribe: number) => {
               const bribeData = (
-                await this._dbClient.get({
+                await dbClient.get({
                   select: "*",
                   table: "bribes",
                   where: `bribe_id='${bribe.toString()}'`,
@@ -69,7 +69,7 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
                 epoch: bribeData.epoch,
                 bribeId: bribeData.bribe_id,
                 provider: bribeData.provider,
-                value: new BigNumber(bribeData.value).multipliedBy(voteShare).toFixed(),
+                value: new BigNumber(bribeData.value).multipliedBy(voteShare).toFixed(0),
                 name: bribeData.name,
               };
             });
@@ -81,7 +81,7 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
               votes: tokenVote.value,
               fee: fee,
               bribes: finalBribes,
-              voteShare: voteShare.multipliedBy(100).toFixed(),
+              voteShare: voteShare.multipliedBy(100).toFixed(0),
             };
           });
           const finalTokenVotesRes = await Promise.all(finalTokenVotes);
