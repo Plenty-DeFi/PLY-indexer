@@ -45,8 +45,8 @@ export default class PositionsProcessor {
               derivedBigMap,
               attachBigMap
             );
-            offset += this._config.tzktOffset;
           });
+          offset += this._config.tzktOffset;
         }
       }
     } catch (e) {

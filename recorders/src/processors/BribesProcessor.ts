@@ -40,8 +40,8 @@ export default class BribesProcessor {
         } else {
           bribes.forEach(async (bribe) => {
             await this._processBribe(bribe, amm, tokens);
-            offset += this._config.tzktOffset;
           });
+          offset += this._config.tzktOffset;
         }
       }
     } catch (e) {

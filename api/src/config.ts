@@ -15,7 +15,7 @@ export const config: Config = {
     host: process.env.POSTGRES_HOST || "localhost",
   },
   tezGraph: process.env.TZGRAPH_URL || "https://ghostnet.tezgraph.ecadinfra.com/graphql",
-  rpc: process.env.RPC || "https://ghostnet.smartpy.io",
+  rpc: process.env.RPC || "https://rpc.tzkt.io/ghostnet",
 
   ttl: {
     data: parseInt(process.env.DATA_TTL) || 300000,

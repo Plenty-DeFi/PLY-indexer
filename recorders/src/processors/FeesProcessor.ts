@@ -42,8 +42,8 @@ export default class FeesProcessor {
         } else {
           for (const fee of fees) {
             await this._processFees(fee, tokens);
-            offset += this._config.tzktOffset;
           }
+          offset += this._config.tzktOffset;
         }
       }
     } catch (e) {

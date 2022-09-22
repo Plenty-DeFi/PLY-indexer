@@ -51,10 +51,10 @@ export default class VotesProcessor {
             await this._dbClient.insert({
               table: "total_amm_votes",
               columns: "(amm, epoch, value)",
-              values: `(${votes.key.amm}, '${votes.key.epoch}', '${votes.value}')`,
+              values: `('${votes.key.amm}', '${votes.key.epoch}', '${votes.value}')`,
             });
-            offset += this._config.tzktOffset;
           });
+          offset += this._config.tzktOffset;
         }
       }
     } catch (e) {
@@ -86,12 +86,12 @@ export default class VotesProcessor {
             await this._dbClient.insert({
               table: "token_amm_votes",
               columns: "(amm, epoch, token_id, value, fee_claimed, bribes, bribes_unclaimed)",
-              values: `(${votes.key.amm}, '${votes.key.epoch}', '${votes.key.token_id}', '${
+              values: `('${votes.key.amm}', '${votes.key.epoch}', '${votes.key.token_id}', '${
                 votes.value
-              }', ${false}, ${bribesArray}, ${bribesArray})`,
+              }', ${false}, '${bribesArray}', '${bribesArray}')`,
             });
-            offset += this._config.tzktOffset;
           });
+          offset += this._config.tzktOffset;
         }
       }
     } catch (err) {
@@ -194,7 +194,7 @@ export default class VotesProcessor {
                 console.log("Briged claimed", update.content.key.token_id, update.content.key.bribe_id);
                 await this._dbClient.update({
                   table: "token_amm_votes",
-                  set: `bribes_unclaimed = array_remove(bribes_unclaimed, '${update.content.key.bribe_id}')`,
+                  set: `bribes_unclaimed = array_remove(bribes_unclaimed, ${update.content.key.bribe_id})`,
                   where: `token_id='${update.content.key.token_id}' AND '${update.content.key.bribe_id}'=ANY(bribes_unclaimed)`,
                 });
               }
@@ -227,10 +227,10 @@ export default class VotesProcessor {
             await this._dbClient.insert({
               table: "total_amm_votes",
               columns: "(amm, epoch, value)",
-              values: `(${votes.key.amm}, '${votes.key.epoch}', '${votes.value}')`,
+              values: `('${votes.key.amm}', '${votes.key.epoch}', '${votes.value}')`,
             });
-            offset += this._config.tzktOffset;
           });
+          offset += this._config.tzktOffset;
         }
       }
     } catch (e) {
@@ -263,12 +263,12 @@ export default class VotesProcessor {
             await this._dbClient.insert({
               table: "token_amm_votes",
               columns: "(amm, epoch, token_id, value, fee_claimed, bribes, bribes_unclaimed)",
-              values: `(${votes.key.amm}, '${votes.key.epoch}', '${votes.key.token_id}', '${
+              values: `('${votes.key.amm}', '${votes.key.epoch}', '${votes.key.token_id}', '${
                 votes.value
-              }', ${false}, ${bribesArray}, ${bribesArray})`,
+              }', ${false}, '${bribesArray}', '${bribesArray}')`,
             });
-            offset += this._config.tzktOffset;
           });
+          offset += this._config.tzktOffset;
         }
       }
     } catch (err) {

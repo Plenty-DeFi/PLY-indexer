@@ -190,7 +190,7 @@ export default class TzktProvider {
       });
 
       return {
-        bribeBigMap: res.data.balances.toString(),
+        bribeBigMap: res.data.epoch_bribes.toString(),
         bribeClaimLedgerBigMap: res.data.claim_ledger.toString(),
       };
     } catch (err) {

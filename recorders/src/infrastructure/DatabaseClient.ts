@@ -101,7 +101,7 @@ export default class DatabaseClient {
           value VARCHAR(100) NOT NULL,
           fee_claimed BOOLEAN NOT NULL,
           bribes NUMERIC[] NOT NULL,
-          bribe_claimed NUMERIC[] NOT NULL,
+          bribes_unclaimed NUMERIC[] NOT NULL,
           PRIMARY KEY (amm, epoch, token_id)
         );`
       );

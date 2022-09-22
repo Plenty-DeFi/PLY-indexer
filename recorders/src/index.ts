@@ -8,7 +8,7 @@ import LocksProcessor from "./processors/LocksProcessor";
 import BribesProcessor from "./processors/BribesProcessor";
 import PositionsProcessor from "./processors/PositionsProcessor";
 import VotesProcessor from "./processors/VotesProcessor";
-import FeesProcessor from "./processors/feesProcessor";
+import FeesProcessor from "./processors/FeesProcessor";
 const dependencies = buildDependencies(config);
 
 const heartbeat = new HeartBeat(config);
