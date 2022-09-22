@@ -44,6 +44,13 @@ export interface Contracts {
     ledger: number;
     attached: number;
     amm_to_gauge_bribe: number;
+    total_amm_votes: number;
+    total_epoch_votes: number;
+    total_token_votes: number;
+    token_amm_votes: number;
+    amm_epoch_fee: number;
+    fee_claim_ledger: number;
+    epoch_end: number;
   };
 }
 
@@ -234,6 +241,34 @@ export interface LqtBalancesApiResponse {
   };
 }
 
+export interface TotalAmmVotes {
+  key: {
+    amm: string;
+    epoch: string;
+  };
+  value: string;
+}
+
+export interface TokenAmmVotes {
+  key: {
+    amm: string;
+    epoch: string;
+    token_id: string;
+  };
+  value: string;
+}
+export interface FeesApiResponse {
+  key: {
+    amm: string;
+    epoch: string;
+  };
+  value: FeeValue[];
+}
+
+export interface FeeValue {
+  key: TokenType;
+  value: string;
+}
 export interface BribeApiResponse {
   key: {
     epoch: string;
@@ -277,4 +312,5 @@ export interface Pool {
   bribe_bigmap: string;
   attach_bigmap: string;
   derived_bigmap: string;
+  bribe_claim_ledger: string;
 }

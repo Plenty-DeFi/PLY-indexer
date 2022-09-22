@@ -57,7 +57,8 @@ export default class DatabaseClient {
           gauge_BigMap VARCHAR(100) NOT NULL,
           attach_BigMap VARCHAR(100) NOT NULL,
           derived_BigMap VARCHAR(100) NOT NULL,
-          bribe_BigMap VARCHAR(100) NOT NULL
+          bribe_BigMap VARCHAR(100) NOT NULL,
+          bribe_claim_ledger VARCHAR(100) NOT NULL
         );`
       );
       await this._dbClient.query(
@@ -81,6 +82,39 @@ export default class DatabaseClient {
           derived_balance VARCHAR(50) NOT NULL,
           attach_BigMap VARCHAR(50) NOT NULL,
           PRIMARY KEY (amm, user_address)
+        );`
+      );
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS total_amm_votes (
+          amm VARCHAR(50) NOT NULL,
+          epoch VARCHAR(50) NOT NULL,
+          value VARCHAR(100) NOT NULL,
+          PRIMARY KEY (amm, epoch)
+        );`
+      );
+
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS token_amm_votes (
+          amm VARCHAR(50) NOT NULL,
+          epoch VARCHAR(50) NOT NULL,
+          token_id VARCHAR(50) NOT NULL,
+          value VARCHAR(100) NOT NULL,
+          fee_claimed BOOLEAN NOT NULL,
+          bribes NUMERIC[] NOT NULL,
+          bribe_claimed NUMERIC[] NOT NULL,
+          PRIMARY KEY (amm, epoch, token_id)
+        );`
+      );
+
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS fees (
+          amm VARCHAR(50) NOT NULL,
+          epoch VARCHAR(50) NOT NULL,
+          token1_symbol VARCHAR(50) NOT NULL,
+          token1_fee VARCHAR(100) NOT NULL,
+          token2_symbol VARCHAR(50) NOT NULL,
+          token2_fee VARCHAR(100) NOT NULL,
+          PRIMARY KEY (amm, epoch)
         );`
       );
     } catch (err) {

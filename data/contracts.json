@@ -22,7 +22,11 @@
     "amm_to_gauge_bribe": 162784,
     "total_amm_votes": 162787,
     "total_epoch_votes": 162788,
-    "total_token_votes": 162789
+    "total_token_votes": 162789,
+    "token_amm_votes": 162786,
+    "amm_epoch_fee": 162791,
+    "fee_claim_ledger": 162793,
+    "epoch_end": 162785
   },
   "EMISSION_FACTOR": 5
 }

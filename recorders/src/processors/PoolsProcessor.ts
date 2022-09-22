@@ -63,7 +63,7 @@ export default class PoolsProcessor {
       //get gaugeBigMap
       const { gaugeBigMap, derivedBigMap, attachBigMap } = await this._tkztProvider.getGaugeBigMap(pool.value.gauge);
       //get bribeBigMap
-      const bribeBigMap = await this._tkztProvider.getBribeBigMap(pool.value.bribe);
+      const { bribeBigMap, bribeClaimLedgerBigMap } = await this._tkztProvider.getBribeBigMap(pool.value.bribe);
       //process all bribes
       await this._bribesProcessor.process(bribeBigMap, pool.key, tokens);
       //process all position
@@ -74,7 +74,7 @@ export default class PoolsProcessor {
       this._dbClient.insert({
         table: "pools",
         columns:
-          "(amm, type, lqt_decimals, lqt_symbol, lqt_Token, token1, token2, token1_variant, token2_variant, token1_decimals, token2_decimals, token1_Id, token2_Id, token1_symbol, token2_symbol, lqt_Token_BigMap, gauge, bribe, gauge_BigMap, attach_BigMap, derived_BigMap, bribe_BigMap)",
+          "(amm, type, lqt_decimals, lqt_symbol, lqt_Token, token1, token2, token1_variant, token2_variant, token1_decimals, token2_decimals, token1_Id, token2_Id, token1_symbol, token2_symbol, lqt_Token_BigMap, gauge, bribe, gauge_BigMap, attach_BigMap, derived_BigMap, bribe_BigMap, bribe_claim_ledger)",
         values: `('${pool.key}', '${ammData.type}', ${ammData.lqtDecimals}, '${ammData.lqtSymbol}', '${
           ammData.lqtAddress
         }', '${ammData.token1.address}', '${ammData.token2.address}', '${ammData.token1.variant}', '${
@@ -83,7 +83,7 @@ export default class PoolsProcessor {
           ammData.token2.tokenId || null
         }, '${ammData.token1.symbol}', '${ammData.token2.symbol}', '${ammData.lqtBigMap}', '${pool.value.gauge}', '${
           pool.value.bribe
-        }', '${gaugeBigMap}', '${attachBigMap}', '${derivedBigMap}', '${bribeBigMap}')`,
+        }', '${gaugeBigMap}', '${attachBigMap}', '${derivedBigMap}', '${bribeBigMap}', '${bribeClaimLedgerBigMap}')`,
       });
     } catch (e) {
       console.log(e);

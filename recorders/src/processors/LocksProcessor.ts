@@ -229,7 +229,7 @@ export default class LocksProcessor {
       });
       if (existingLock.rowCount === 0) {
         console.log("Inseting Lock ${lockData.tokenId}");
-        this._dbClient.insert({
+        await this._dbClient.insert({
           table: "locks",
           columns: "(id, owner, base_value, end_ts, attached)",
           values: `(${lockData.tokenId}, '${lockData.owner}', '${lockData.base_value}', '${lockData.end}', ${lockData.attached})`,
@@ -242,7 +242,7 @@ export default class LocksProcessor {
         });
         if (existingEntry.rowCount === 0) {
           console.log("Updating Lock ${lockData.tokenId}");
-          this._dbClient.update({
+          await this._dbClient.update({
             table: "locks",
             set: `owner='${lockData.owner}', base_value='${lockData.base_value}', end_ts='${lockData.end}', attached=${lockData.attached}`,
             where: `id=${lockData.tokenId}`,

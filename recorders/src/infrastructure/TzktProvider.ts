@@ -8,6 +8,7 @@ import {
   GetTransactionParameters,
   LqtBalancesApiResponse,
   PoolsApiResponse,
+  TotalAmmVotes,
   Transaction,
 } from "../types";
 
@@ -180,7 +181,7 @@ export default class TzktProvider {
     }
   }
 
-  async getBribeBigMap<T>(bribe: string): Promise<string> {
+  async getBribeBigMap<T>(bribe: string): Promise<{ bribeBigMap: string; bribeClaimLedgerBigMap: string }> {
     try {
       const res = await axios.get(`${this._tzktURL}/contracts/${bribe}/storage`, {
         paramsSerializer: (params) => {
@@ -188,7 +189,10 @@ export default class TzktProvider {
         },
       });
 
-      return res.data.epoch_bribes.toString();
+      return {
+        bribeBigMap: res.data.balances.toString(),
+        bribeClaimLedgerBigMap: res.data.claim_ledger.toString(),
+      };
     } catch (err) {
       throw err;
     }
@@ -199,6 +203,50 @@ export default class TzktProvider {
       const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
         params: {
           select: "key,value",
+          limit: params.limit,
+          offset: params.offset,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getBigMap(params: { bigMap: string; limit: number; offset: number }): Promise<[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          limit: params.limit,
+          offset: params.offset,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getEpochTotalAmmVotes<T>(params: {
+    bigMap: string;
+    limit: number;
+    offset: number;
+    epoch: string;
+  }): Promise<[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key.epoch"]: params.epoch,
           limit: params.limit,
           offset: params.offset,
         },
