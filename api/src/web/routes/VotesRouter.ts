@@ -81,6 +81,8 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
               votes: tokenVote.value,
               fee: fee,
               bribes: finalBribes,
+              unclaimedBribes: tokenVote.bribes_unclaimed,
+              feeClaimed: tokenVote.fee_claimed,
               voteShare: voteShare.multipliedBy(100).toFixed(0),
             };
           });
