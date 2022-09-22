@@ -61,7 +61,7 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
                 await dbClient.get({
                   select: "*",
                   table: "bribes",
-                  where: `bribe_id='${bribe.toString()}'`,
+                  where: `bribe_id='${bribe.toString()}' AND amm='${tokenVote.amm}'`,
                 })
               ).rows[0];
               return {
