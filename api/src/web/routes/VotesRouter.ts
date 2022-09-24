@@ -1,11 +1,9 @@
 import { Request, Response, Router } from "express";
 import { Dependecies, Lock } from "../../types";
-import { votingPower } from "../../infrastructure/utils";
-import TzktProvider from "../../infrastructure/TzktProvider";
-import BigNumber from "bignumber.js";
-import { QueryResult } from "pg";
 
-function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Router {
+import BigNumber from "bignumber.js";
+
+function build({ dbClient }: Dependecies): Router {
   const router = Router();
   router.get("/", async (req: Request, res: Response) => {
     try {
@@ -35,8 +33,15 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
               table: "total_amm_votes",
               where: `amm='${tokenVote.amm}' AND epoch='${tokenVote.epoch}'`,
             });
+            const tokenTotalVotes = await dbClient.get({
+              select: "*",
+              table: "total_token_votes",
+              where: `token_id='${lock.id}' AND epoch='${tokenVote.epoch}'`,
+            });
             const ammEpochVotesValue = new BigNumber(ammEpochVotes.rows[0].value);
-            const voteShare = new BigNumber(tokenVote.value).dividedBy(ammEpochVotesValue);
+            const tokenEpochVotesValue = new BigNumber(tokenTotalVotes.rows[0].value);
+            const voteShare = new BigNumber(tokenVote.value).dividedBy(tokenEpochVotesValue);
+            const voteShareAmm = new BigNumber(tokenVote.value).dividedBy(ammEpochVotesValue);
             const feesEpoch = await dbClient.get({
               select: "*",
               table: "fees",
@@ -46,8 +51,8 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
             if (feesEpoch.rowCount === 0) {
               fee = { token1Fee: "0", token2Fee: "0", token1Symbol: "", token2Symbol: "" };
             } else {
-              const token1_fee = new BigNumber(feesEpoch.rows[0].token1_fee).multipliedBy(voteShare);
-              const token2_fee = new BigNumber(feesEpoch.rows[0].token2_fee).multipliedBy(voteShare);
+              const token1_fee = new BigNumber(feesEpoch.rows[0].token1_fee).multipliedBy(voteShareAmm);
+              const token2_fee = new BigNumber(feesEpoch.rows[0].token2_fee).multipliedBy(voteShareAmm);
               fee = {
                 token1Fee: token1_fee.toFixed(0),
                 token2Fee: token2_fee.toFixed(0),
@@ -69,7 +74,7 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
                 epoch: bribeData.epoch,
                 bribeId: bribeData.bribe_id,
                 provider: bribeData.provider,
-                value: new BigNumber(bribeData.value).multipliedBy(voteShare).toFixed(0),
+                value: new BigNumber(bribeData.value).multipliedBy(voteShareAmm).toFixed(0),
                 name: bribeData.name,
               };
             });
@@ -83,7 +88,7 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
               bribes: finalBribes,
               unclaimedBribes: tokenVote.bribes_unclaimed,
               feeClaimed: tokenVote.fee_claimed,
-              voteShare: voteShare.multipliedBy(100).toFixed(0),
+              voteShare: voteShare.multipliedBy(100).toString(),
             };
           });
           const finalTokenVotesRes = await Promise.all(finalTokenVotes);

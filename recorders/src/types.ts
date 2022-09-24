@@ -249,6 +249,14 @@ export interface TotalAmmVotes {
   value: string;
 }
 
+export interface TotalTokenVotes {
+  key: {
+    token_id: string;
+    epoch: string;
+  };
+  value: string;
+}
+
 export interface TokenAmmVotes {
   key: {
     amm: string;

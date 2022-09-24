@@ -9,7 +9,16 @@
 
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
-import { Config, Dependecies, Contracts, BigMapUpdateResponseType, TotalAmmVotes, TokenAmmVotes, Pool } from "../types";
+import {
+  Config,
+  Dependecies,
+  Contracts,
+  BigMapUpdateResponseType,
+  TotalAmmVotes,
+  TokenAmmVotes,
+  Pool,
+  TotalTokenVotes,
+} from "../types";
 
 export default class VotesProcessor {
   private _config: Config;
@@ -30,6 +39,7 @@ export default class VotesProcessor {
 
       await this.processTotalAmmVotes();
       await this.processTokenAmmVotes();
+      await this.processTotalTokenVotes();
     } catch (e) {
       console.log("Error from votes processing", e);
     }
@@ -63,6 +73,34 @@ export default class VotesProcessor {
     }
   }
 
+  async processTotalTokenVotes() {
+    try {
+      let offset = 0;
+      while (true) {
+        const total_token_votes: TotalTokenVotes[] = await this._tkztProvider.getBigMap({
+          bigMap: this._contracts.bigMaps.total_token_votes.toString(),
+          limit: this._config.tzktLimit,
+          offset,
+        });
+        if (total_token_votes.length === 0) {
+          break;
+        } else {
+          total_token_votes.forEach(async (votes) => {
+            await this._dbClient.insert({
+              table: "total_token_votes",
+              columns: "(token_id, epoch, value)",
+              values: `('${votes.key.token_id}', '${votes.key.epoch}', '${votes.value}')`,
+            });
+          });
+          offset += this._config.tzktOffset;
+        }
+      }
+    } catch (e) {
+      console.log("Error processing total token votes", e);
+      throw e;
+    }
+  }
+
   async processTokenAmmVotes() {
     try {
       let offset = 0;
@@ -83,13 +121,31 @@ export default class VotesProcessor {
             });
             //array to postgress array
             const bribesArray = bribes.rowCount != 0 ? `{${bribes.rows.map((b) => b.bribe_id).join(",")}}` : "{}";
-            await this._dbClient.insert({
+
+            const existingEntry = await this._dbClient.get({
+              select: "*",
               table: "token_amm_votes",
-              columns: "(amm, epoch, token_id, value, fee_claimed, bribes, bribes_unclaimed)",
-              values: `('${votes.key.amm}', '${votes.key.epoch}', '${votes.key.token_id}', '${
-                votes.value
-              }', ${false}, '${bribesArray}', '${bribesArray}')`,
+              where: `amm='${votes.key.amm}' AND epoch='${votes.key.epoch}' AND token_id='${votes.key.token_id}'`,
             });
+            if (existingEntry.rowCount === 0) {
+              console.log("Inseting Token AMM vote" + votes.key.amm + " " + votes.key.epoch + " " + votes.key.token_id);
+              await this._dbClient.insert({
+                table: "token_amm_votes",
+                columns: "(amm, epoch, token_id, value, fee_claimed, bribes, bribes_unclaimed)",
+                values: `('${votes.key.amm}', '${votes.key.epoch}', '${votes.key.token_id}', '${
+                  votes.value
+                }', ${false}, '${bribesArray}', '${bribesArray}')`,
+              });
+            } else {
+              console.log("Updating Token AMM vote" + votes.key.amm + " " + votes.key.epoch + " " + votes.key.token_id);
+              await this._dbClient.update({
+                table: "token_amm_votes",
+                set: `value='${
+                  votes.value
+                }', fee_claimed-${false}, bribes='${bribesArray}', bribes_unclaimed='${bribesArray}'`,
+                where: `amm='${votes.key.amm}' AND epoch='${votes.key.epoch}' AND token_id='${votes.key.token_id}'`,
+              });
+            }
           });
           offset += this._config.tzktOffset;
         }
@@ -113,6 +169,7 @@ export default class VotesProcessor {
         console.log("Processing epoch", epoch);
         await this.processEpochAmmVotes(epoch);
         await this.processEpochTokenAmmVotes(epoch);
+        await this.processEpochTokenTotalVotes(epoch);
       }
     } catch (err) {
       console.error("error processing epoch:", err);
@@ -260,19 +317,65 @@ export default class VotesProcessor {
             });
             //array to postgress array
             const bribesArray = bribes.rowCount != 0 ? `{${bribes.rows.map((b) => b.bribe_id).join(",")}}` : "{}";
-            await this._dbClient.insert({
+            const existingEntry = await this._dbClient.get({
+              select: "*",
               table: "token_amm_votes",
-              columns: "(amm, epoch, token_id, value, fee_claimed, bribes, bribes_unclaimed)",
-              values: `('${votes.key.amm}', '${votes.key.epoch}', '${votes.key.token_id}', '${
-                votes.value
-              }', ${false}, '${bribesArray}', '${bribesArray}')`,
+              where: `amm='${votes.key.amm}' AND epoch='${votes.key.epoch}' AND token_id='${votes.key.token_id}'`,
             });
+            if (existingEntry.rowCount === 0) {
+              console.log("Inseting Token AMM vote" + votes.key.amm + " " + votes.key.epoch + " " + votes.key.token_id);
+              await this._dbClient.insert({
+                table: "token_amm_votes",
+                columns: "(amm, epoch, token_id, value, fee_claimed, bribes, bribes_unclaimed)",
+                values: `('${votes.key.amm}', '${votes.key.epoch}', '${votes.key.token_id}', '${
+                  votes.value
+                }', ${false}, '${bribesArray}', '${bribesArray}')`,
+              });
+            } else {
+              console.log("Updating Token AMM vote" + votes.key.amm + " " + votes.key.epoch + " " + votes.key.token_id);
+              await this._dbClient.update({
+                table: "token_amm_votes",
+                set: `value='${
+                  votes.value
+                }', fee_claimed-${false}, bribes='${bribesArray}', bribes_unclaimed='${bribesArray}'`,
+                where: `amm='${votes.key.amm}' AND epoch='${votes.key.epoch}' AND token_id='${votes.key.token_id}'`,
+              });
+            }
           });
           offset += this._config.tzktOffset;
         }
       }
     } catch (err) {
       console.error("error processing epoch token amm votes:", err);
+      throw err;
+    }
+  }
+
+  async processEpochTokenTotalVotes(epoch: string) {
+    try {
+      let offset = 0;
+      while (true) {
+        const total_token_votes: TotalTokenVotes[] = await this._tkztProvider.getEpochTotalAmmVotes({
+          bigMap: this._contracts.bigMaps.total_token_votes.toString(),
+          limit: this._config.tzktLimit,
+          offset,
+          epoch: epoch,
+        });
+        if (total_token_votes.length === 0) {
+          break;
+        } else {
+          total_token_votes.forEach(async (votes) => {
+            await this._dbClient.insert({
+              table: "total_token_votes",
+              columns: "(token_id, epoch, value)",
+              values: `('${votes.key.token_id}', '${votes.key.epoch}', '${votes.value}')`,
+            });
+          });
+          offset += this._config.tzktOffset;
+        }
+      }
+    } catch (err) {
+      console.error("error processing epoch token total votes:", err);
       throw err;
     }
   }

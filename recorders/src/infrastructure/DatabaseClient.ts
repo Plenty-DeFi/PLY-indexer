@@ -94,6 +94,15 @@ export default class DatabaseClient {
       );
 
       await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS total_token_votes (
+          token_id VARCHAR(50) NOT NULL,
+          epoch VARCHAR(50) NOT NULL,
+          value VARCHAR(100) NOT NULL,
+          PRIMARY KEY (token_id, epoch)
+        );`
+      );
+
+      await this._dbClient.query(
         `CREATE TABLE IF NOT EXISTS token_amm_votes (
           amm VARCHAR(50) NOT NULL,
           epoch VARCHAR(50) NOT NULL,
