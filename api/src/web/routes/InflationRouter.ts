@@ -25,8 +25,7 @@ function build({ dbClient, tzktProvider, contracts, config, cache }: Dependecies
 
       if (locks.rowCount !== 0) {
         //console.log(locksAll);
-        const finalResponse = [];
-        for (const lock of locks.rows) {
+        const response = locks.rows.map(async (lock) => {
           const currentEpoch = await tzktProvider.getCurrentEpoch(contracts.voter.address);
           const validArr: string[] = range(parseInt(lock.epoch), parseInt(currentEpoch));
           const unclaimedEpochs = validArr.filter((el) => !lock.claimed_epochs.includes(el));
@@ -62,8 +61,9 @@ function build({ dbClient, tzktProvider, contracts, config, cache }: Dependecies
             }
           });
           const resultArr = await Promise.all(result);
-          finalResponse.push({ id: lock.id, unclaimedInflation: resultArr.filter((x) => x.inflationShare !== "0") });
-        }
+          return { id: lock.id, unclaimedInflation: resultArr.filter((x) => x.inflationShare !== "0") };
+        });
+        const finalResponse = await Promise.all(response);
         cache.insert(address, finalResponse, config.ttl.data); //todo change ttl to next epoch end
         return res.json(finalResponse);
       } else {
