@@ -110,16 +110,16 @@ export const votingPowerFast = (ts2: number, time: number, map1: Map<any, any>, 
       let low = 0;
       let mid = 0;
 
-      while (low < high && map1.get(mid + 1).ts != ts) {
+      while (low < high && map1.get((mid + 1).toString()).ts != ts) {
         mid = Math.floor((low + high + 1) / 2);
-        if (map1.get(mid + 1).ts < ts) {
+        if (map1.get((mid + 1).toString()).ts < ts) {
           low = mid;
         } else {
           high = mid - 1;
         }
       }
       if (map1.get(`${mid + 1}`).ts === ts) {
-        return map1.get(mid + 1).bias.toString();
+        return map1.get((mid + 1).toString()).bias.toString();
       } else {
         const ob = map1.get(`${low + 1}`);
         const bias = new BigNumber(ob.bias);
