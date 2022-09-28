@@ -31,7 +31,9 @@ export default class DatabaseClient {
           owner VARCHAR(50) NOT NULL,
           base_value VARCHAR(100) NOT NULL,
           end_ts VARCHAR(100) NOT NULL,
-          attached BOOLEAN NOT NULL
+          attached BOOLEAN NOT NULL,
+          epoch VARCHAR(50) NOT NULL,
+          claimed_epochs VARCHAR(50)[] NOT NULL
         );`
       );
       await this._dbClient.query(
@@ -124,6 +126,20 @@ export default class DatabaseClient {
           token2_symbol VARCHAR(50) NOT NULL,
           token2_fee VARCHAR(100) NOT NULL,
           PRIMARY KEY (amm, epoch)
+        );`
+      );
+      /*       await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS slopes (
+          ts VARCHAR(50) PRIMARY KEY,
+          slope VARCHAR(100) NOT NULL
+        );`
+      ); */
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS epochs (
+          epoch VARCHAR(50) PRIMARY KEY,
+          epoch_end_ts VARCHAR(50) NOT NULL,
+          epoch_total_vp VARCHAR(100) NOT NULL,
+          epoch_inflation VARCHAR(100) NOT NULL
         );`
       );
     } catch (err) {

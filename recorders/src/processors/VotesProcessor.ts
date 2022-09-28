@@ -19,18 +19,21 @@ import {
   Pool,
   TotalTokenVotes,
 } from "../types";
+import EpochsProcessor from "./EpochsProcessor";
 
 export default class VotesProcessor {
   private _config: Config;
   private _dbClient: DatabaseClient;
   private _tkztProvider: TzktProvider;
   private _contracts: Contracts;
+  private _epochProcessor: EpochsProcessor;
 
   constructor({ config, dbClient, tzktProvider, contracts }: Dependecies) {
     this._config = config;
     this._dbClient = dbClient;
     this._tkztProvider = tzktProvider;
     this._contracts = contracts;
+    this._epochProcessor = new EpochsProcessor({ config, dbClient, tzktProvider, contracts });
   }
 
   async process() {
@@ -166,10 +169,12 @@ export default class VotesProcessor {
       });
       if (updates.length !== 0) {
         const epoch = (parseInt(updates[0].content.key) - 1).toString();
+        const epochEndTs = (Date.parse(updates[0].content.value) / 1000).toFixed(0);
         console.log("Processing epoch", epoch);
         await this.processEpochAmmVotes(epoch);
         await this.processEpochTokenAmmVotes(epoch);
         await this.processEpochTokenTotalVotes(epoch);
+        await this._epochProcessor._processEpoch(epoch, epochEndTs);
       }
     } catch (err) {
       console.error("error processing epoch:", err);

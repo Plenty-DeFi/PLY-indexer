@@ -9,6 +9,8 @@ import BribesProcessor from "./processors/BribesProcessor";
 import PositionsProcessor from "./processors/PositionsProcessor";
 import VotesProcessor from "./processors/VotesProcessor";
 import FeesProcessor from "./processors/FeesProcessor";
+import EpochsProcessor from "./processors/EpochsProcessor";
+import SlopesProcessor from "./processors/SlopeProcessor";
 const dependencies = buildDependencies(config);
 
 const heartbeat = new HeartBeat(config);
@@ -19,6 +21,8 @@ const poolsProcessor = new PoolsProcessor(dependencies, bribesProcessor, positio
 const votesProcessor = new VotesProcessor(dependencies);
 const feesProcessor = new FeesProcessor(dependencies);
 const blockListener = new BlockListener(config);
+const epochsProcessor = new EpochsProcessor(dependencies);
+const slopesProcessor = new SlopesProcessor(dependencies);
 (async () => {
   try {
     heartbeat.start();
@@ -27,6 +31,8 @@ const blockListener = new BlockListener(config);
     await poolsProcessor.process();
     await votesProcessor.process();
     await feesProcessor.process();
+    //await slopesProcessor.process();
+    await epochsProcessor.process();
     blockListener.listen();
     blockListener.blockEmitter.on("newBlock", (b: BlockData) => {
       console.log("block listener got a new block", b.level, b.hash);
@@ -36,6 +42,7 @@ const blockListener = new BlockListener(config);
         await bribesProcessor.updateBribes(b.level);
         await positionProcessor.updatePositions(b.level);
         await votesProcessor.epochUpdates(b.level);
+        //await slopesProcessor.updateSlopes(b.level);
         await votesProcessor.votesUpdates(b.level);
         await feesProcessor.updateFees(b.level);
       }, 5000);

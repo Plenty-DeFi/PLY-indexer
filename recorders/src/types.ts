@@ -13,6 +13,7 @@ export interface Config {
   tezGraph: string;
   tezGraphWs: string;
   tezGraphLimit: number;
+  rpc: string;
   postgres: {
     username: string;
     database: string;
@@ -51,6 +52,20 @@ export interface Contracts {
     amm_epoch_fee: number;
     fee_claim_ledger: number;
     epoch_end: number;
+    claim_ledger: number;
+    token_checkpoints: number;
+    global_checkpoints: number;
+    slope_changes: number;
+    epoch_inflation: number;
+  };
+}
+
+export interface Checkpoints {
+  key: string;
+  value: {
+    ts: string;
+    bias: string;
+    slope: string;
   };
 }
 
@@ -60,6 +75,8 @@ export interface Lock {
   base_value: string;
   end: string;
   attached: boolean;
+  epoch: string;
+  claimedEpochs: string;
 }
 
 export interface LocksQueryVariable {
@@ -271,6 +288,13 @@ export interface FeesApiResponse {
     epoch: string;
   };
   value: FeeValue[];
+}
+
+export interface InflationClaimLedger {
+  key: {
+    token_id: string;
+    epoch: string;
+  };
 }
 
 export interface FeeValue {

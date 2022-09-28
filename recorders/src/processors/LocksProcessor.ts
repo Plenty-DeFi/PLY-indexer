@@ -136,11 +136,19 @@ export default class LocksProcessor {
       console.log(values);
       const attached: boolean = await this._getAttached(tokenId);
       console.log(attached);
+      const epoch = await this._getEpoch(tokenId);
+      const claimedEpochs = await this._tkztProvider.getClaimedEpochs({
+        bigMap: this._contracts.bigMaps.claim_ledger.toString(),
+        token_id: tokenId,
+      });
+      const claimedEpochsSql = claimedEpochs.length != 0 ? `{${claimedEpochs.map((b) => b).join(",")}}` : "{}";
       const lockData = {
         ...values,
         attached,
         owner,
         tokenId,
+        epoch,
+        claimedEpochs: claimedEpochsSql,
       };
       await this._lockDbOperation(lockData);
     } catch (err) {
@@ -156,13 +164,36 @@ export default class LocksProcessor {
       console.log(values);
       const attached: boolean = await this._getAttached(tokenId);
       console.log(attached);
+      const epoch = await this._getEpoch(tokenId);
+      const claimedEpochs = await this._tkztProvider.getClaimedEpochs({
+        bigMap: this._contracts.bigMaps.claim_ledger.toString(),
+        token_id: tokenId,
+      });
+      const claimedEpochsSql = claimedEpochs.length != 0 ? `{${claimedEpochs.map((b) => b).join(",")}}` : "{}";
       const lockData = {
         ...values,
         attached,
         owner,
         tokenId,
+        epoch,
+        claimedEpochs: claimedEpochsSql,
       };
       await this._lockDbOperation(lockData);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  private async _getEpoch(tokenId: string): Promise<string> {
+    try {
+      const ts = await this._tkztProvider.getLockTs({
+        bigMap: this._contracts.bigMaps.token_checkpoints.toString(),
+        token_id: tokenId,
+      });
+      const timeISO = new Date(parseInt(ts) * 1000).toISOString();
+      const block = await this._tkztProvider.getBlock({ ts: timeISO });
+      const epoch = await this._tkztProvider.getEpochfromLevel(this._contracts.voter.address, block);
+      return epoch;
     } catch (err) {
       throw err;
     }
@@ -231,20 +262,20 @@ export default class LocksProcessor {
         console.log("Inseting Lock ${lockData.tokenId}");
         await this._dbClient.insert({
           table: "locks",
-          columns: "(id, owner, base_value, end_ts, attached)",
-          values: `(${lockData.tokenId}, '${lockData.owner}', '${lockData.base_value}', '${lockData.end}', ${lockData.attached})`,
+          columns: "(id, owner, base_value, end_ts, attached, epoch, claimed_epochs)",
+          values: `(${lockData.tokenId}, '${lockData.owner}', '${lockData.base_value}', '${lockData.end}', ${lockData.attached}, '${lockData.epoch}', '${lockData.claimedEpochs}')`,
         });
       } else {
         const existingEntry = await this._dbClient.get({
           select: "*",
           table: "locks",
-          where: `id=${lockData.tokenId} AND owner='${lockData.owner}' AND base_value='${lockData.base_value}' AND end_ts='${lockData.end}' AND attached=${lockData.attached}`,
+          where: `id=${lockData.tokenId} AND owner='${lockData.owner}' AND base_value='${lockData.base_value}' AND end_ts='${lockData.end}' AND attached=${lockData.attached} AND epoch='${lockData.epoch}' AND claimed_epochs='${lockData.claimedEpochs}'`,
         });
         if (existingEntry.rowCount === 0) {
           console.log("Updating Lock ${lockData.tokenId}");
           await this._dbClient.update({
             table: "locks",
-            set: `owner='${lockData.owner}', base_value='${lockData.base_value}', end_ts='${lockData.end}', attached=${lockData.attached}`,
+            set: `owner='${lockData.owner}', base_value='${lockData.base_value}', end_ts='${lockData.end}', attached=${lockData.attached}, epoch='${lockData.epoch}', claimed_epochs='${lockData.claimedEpochs}'`,
             where: `id=${lockData.tokenId}`,
           });
         } else {
@@ -264,10 +295,13 @@ export default class LocksProcessor {
       const locksUpdates = await this.getLockUpdates(blockLevel);
       // Check attachments
       const attachmentsUpdates = await this.getAttachmentUpdates(blockLevel);
+      // Check claimed epochs updates
+      const claimedEpochsUpdates = await this.getClaimInflationUpdates(blockLevel);
       // create a array of tokenIds, remove duplicates
-      const tokenIds = [...new Set([...ledgerUpdates, ...locksUpdates, ...attachmentsUpdates])];
+      const tokenIds = [
+        ...new Set([...ledgerUpdates, ...locksUpdates, ...attachmentsUpdates, ...claimedEpochsUpdates]),
+      ];
       // call processSepecificLocks with array of tokenIds
-
       console.log("updating tokenIds:", tokenIds);
       if (tokenIds.length > 0) {
         await this.processSpecificLocks(tokenIds);
@@ -345,6 +379,31 @@ export default class LocksProcessor {
           break;
         } else {
           tokenIdUpdates = tokenIdUpdates.concat(updates.map((update) => update.content.key.toString()));
+          offset += this._config.tzktOffset;
+        }
+      }
+      return tokenIdUpdates;
+    } catch (err) {
+      console.error("error b:", err);
+      throw err;
+    }
+  }
+  //claim infaltion
+  async getClaimInflationUpdates(level: string): Promise<string[]> {
+    try {
+      let tokenIdUpdates: string[] = [];
+      let offset = 0;
+      while (true) {
+        const updates = await this._tkztProvider.getBigMapUpdates<BigMapUpdateResponseType[]>({
+          level,
+          bigmapId: this._contracts.bigMaps.claim_ledger.toString(),
+          limit: this._config.tzktLimit,
+          offset,
+        });
+        if (updates.length === 0) {
+          break;
+        } else {
+          tokenIdUpdates = tokenIdUpdates.concat(updates.map((update) => update.content.key.token_id.toString()));
           offset += this._config.tzktOffset;
         }
       }

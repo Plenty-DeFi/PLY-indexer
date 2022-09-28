@@ -64,6 +64,9 @@ export interface Contracts {
     total_amm_votes: number;
     total_epoch_votes: number;
     total_token_votes: number;
+    epoch_end: number;
+    epoch_inflation: number;
+    global_checkpoints: number;
   };
   EMISSION_FACTOR: number;
 }

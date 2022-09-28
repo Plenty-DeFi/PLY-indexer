@@ -1,7 +1,7 @@
 import BigNumber from "bignumber.js";
 import TzktProvider from "./TzktProvider";
 import { config } from "../config";
-import { Contracts, Pool, Token, TokenType } from "../types";
+import { AlltokenCheckpoints, Contracts, Pool, Token, TokenType } from "../types";
 
 const TzktObj = new TzktProvider(config);
 
@@ -74,6 +74,138 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
     return e;
   }
 };
+
+export const votingPowerFast = (ts2: number, time: number, map1: Map<any, any>, sec: string) => {
+  try {
+    let factor: number = 7 * 480; // todo change later to 7 * 86400
+    if (time === 0) {
+      factor = 1;
+    }
+    // Must round down to nearest whole week
+    ts2 = Math.floor(ts2 / factor) * factor;
+    const ts = new BigNumber(ts2);
+
+    if (ts < map1.get("1").ts) {
+      throw "0";
+    }
+
+    const last_checkpoint = map1.get(sec);
+
+    if (ts >= last_checkpoint.ts) {
+      const i_bias = new BigNumber(last_checkpoint.bias);
+      const slope = new BigNumber(last_checkpoint.slope);
+      const f_bias = i_bias.minus(
+        ts
+          .minus(last_checkpoint.ts)
+          .multipliedBy(slope)
+          .dividedBy(10 ** 18)
+      );
+      if (f_bias < new BigNumber(0)) {
+        return "0";
+      } else {
+        return f_bias.decimalPlaces(0, 1).toString();
+      }
+    } else {
+      let high = Number(sec) - 2;
+      let low = 0;
+      let mid = 0;
+
+      while (low < high && map1.get(mid + 1).ts != ts) {
+        mid = Math.floor((low + high + 1) / 2);
+        if (map1.get(mid + 1).ts < ts) {
+          low = mid;
+        } else {
+          high = mid - 1;
+        }
+      }
+      if (map1.get(`${mid + 1}`).ts === ts) {
+        return map1.get(mid + 1).bias.toString();
+      } else {
+        const ob = map1.get(`${low + 1}`);
+        const bias = new BigNumber(ob.bias);
+        const slope = new BigNumber(ob.slope);
+        const d_ts = ts.minus(ob.ts);
+        return bias
+          .minus(d_ts.multipliedBy(slope).dividedBy(10 ** 18))
+          .decimalPlaces(0, 1)
+          .toString();
+      }
+    }
+  } catch (e) {
+    console.log(e);
+    return e;
+  }
+};
+
+/* export const totalVotingPower = async (ts2: number, time: number) => {
+  try {
+    let factor: number = 7 * 480;
+    if (time === 0) {
+      factor = 1;
+    }
+    // Must round down to nearest whole week
+    ts2 = Math.floor(ts2 / factor) * factor;
+    const ts = new BigNumber(ts2);
+
+    const global_checkpoints = await TzktObj.getGlobalCheckpoints();
+    const gc_index =
+    const map1 = new Map();
+    for (var x in global_checkpoints) {
+      map1.set(global_checkpoints[x].key, global_checkpoints[x].value);
+    }
+
+    if (ts < map1.get("1").ts) {
+      throw "0";
+    }
+
+    const sec = await TzktObj.getNumTokenCheckpoints(tokenId);
+    const last_checkpoint = map1.get(sec);
+
+    if (ts >= last_checkpoint.ts) {
+      const i_bias = new BigNumber(last_checkpoint.bias);
+      const slope = new BigNumber(last_checkpoint.slope);
+      const f_bias = i_bias.minus(
+        ts
+          .minus(last_checkpoint.ts)
+          .multipliedBy(slope)
+          .dividedBy(10 ** 18)
+      );
+      if (f_bias < new BigNumber(0)) {
+        return "0";
+      } else {
+        return f_bias.decimalPlaces(0, 1).toString();
+      }
+    } else {
+      let high = Number(sec) - 2;
+      let low = 0;
+      let mid = 0;
+
+      while (low < high && map1.get(mid + 1).ts != ts) {
+        mid = Math.floor((low + high + 1) / 2);
+        if (map1.get(mid + 1).ts < ts) {
+          low = mid;
+        } else {
+          high = mid - 1;
+        }
+      }
+      if (map1.get(`${mid + 1}`).ts === ts) {
+        return map1.get(mid + 1).bias.toString();
+      } else {
+        const ob = map1.get(`${low + 1}`);
+        const bias = new BigNumber(ob.bias);
+        const slope = new BigNumber(ob.slope);
+        const d_ts = ts.minus(ob.ts);
+        return bias
+          .minus(d_ts.multipliedBy(slope).dividedBy(10 ** 18))
+          .decimalPlaces(0, 1)
+          .toString();
+      }
+    }
+  } catch (e) {
+    console.log(e);
+    return e;
+  }
+}; */
 
 export const getPrice = (tokenAddress: string, tokenId: string) => {
   if (tokenAddress === "KT1ArfQ6At3NhzMbiGwLzGtvekytjXq6Gy2G") {
@@ -193,3 +325,8 @@ export const getToken = (type: TokenType, tokens: Token[]): string => {
     return "tez";
   }
 };
+
+export const range = (start: number, stop: number, step = 1) =>
+  Array(Math.ceil((stop - start) / step))
+    .fill(start)
+    .map((x, y) => (x + y * step).toString());

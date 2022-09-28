@@ -5,7 +5,7 @@ import PoolsRouter from "./PoolsRouter";
 import BribesRouter from "./BribesRouter";
 import PositionsRouter from "./PositionsRouter";
 import VotesRouter from "./VotesRouter";
-
+import InflationRouter from "./InflationRouter";
 import { Dependecies } from "../../types";
 
 function build(dependencies: Dependecies): Router {
@@ -16,6 +16,7 @@ function build(dependencies: Dependecies): Router {
   router.use("/bribes", BribesRouter(dependencies));
   router.use("/positions", PositionsRouter(dependencies));
   router.use("/votes", VotesRouter(dependencies));
+  router.use("/inflation", InflationRouter(dependencies));
   return router;
 }
 

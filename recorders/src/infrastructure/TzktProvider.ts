@@ -217,6 +217,90 @@ export default class TzktProvider {
     }
   }
 
+  async getLockTs(params: { bigMap: string; token_id: string }): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key.nat_0"]: params.token_id,
+          ["key.nat_1"]: "1",
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data[0].value.ts.toString();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getBlock(params: { ts: string }): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/blocks/${params.ts}`);
+      return res.data.level.toString();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getEpochfromLevel<T>(voter: string, block: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${voter}/storage`, {
+        params: {
+          ["level"]: block,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data.epoch.toString();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getClaimedEpochs(params: { bigMap: string; token_id: string }): Promise<string[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key.token_id"]: params.token_id,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data.map((x: any) => x.key.epoch.toString());
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getEpochInflation(bigmap: string, epoch: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${bigmap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key"]: epoch,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      if (res.data.length === 0) {
+        return "0";
+      } else {
+        return res.data[0].value;
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getBigMap(params: { bigMap: string; limit: number; offset: number }): Promise<[]> {
     try {
       const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {

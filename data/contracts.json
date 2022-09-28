@@ -26,7 +26,11 @@
     "token_amm_votes": 162786,
     "amm_epoch_fee": 162791,
     "fee_claim_ledger": 162793,
-    "epoch_end": 162785
+    "epoch_end": 162785,
+    "token_checkpoints": 162782,
+    "epoch_inflation": 162775,
+    "global_checkpoints": 162776,
+    "slope_changes": 162781
   },
   "EMISSION_FACTOR": 5
 }

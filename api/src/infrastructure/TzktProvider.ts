@@ -181,6 +181,48 @@ export default class TzktProvider {
     }
   }
 
+  async getEpochEnd(bigmap: string, epoch: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${bigmap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key"]: epoch,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      if (res.data.length === 0) {
+        return "0";
+      } else {
+        return res.data[0].value;
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getEpochInflation(bigmap: string, epoch: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${bigmap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key"]: epoch,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      if (res.data.length === 0) {
+        return "0";
+      } else {
+        return res.data[0].value;
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getAmmPoolValues(amm: string): Promise<{ token1Pool: string; token2Pool: string }> {
     try {
       const res = await axios.get(`${this._tzktURL}/contracts/${amm}/storage`);
@@ -207,6 +249,26 @@ export default class TzktProvider {
       return res.data.map((data: any) => {
         return data.value.bribe;
       });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getCurrentGCIndex(voteEscrow: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${voteEscrow}/storage`);
+      return res.data.gc_index;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  //   Call VE Storage to get map ID
+  async getGlobalCheckpoints(): Promise<AlltokenCheckpoints[]> {
+    try {
+      // mapid variable
+      const res = await axios.get(`${this._tzktURL}/bigmaps/162776/keys`);
+      return res.data;
     } catch (err) {
       throw err;
     }
