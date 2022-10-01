@@ -2,18 +2,7 @@ import axios from "axios";
 import { getTokens, getTokenSymbol } from "../infrastructure/utils";
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
-import {
-  Config,
-  Dependecies,
-  Contracts,
-  PoolsApiResponse,
-  BigMapUpdateResponseType,
-  AmmData,
-  BribeApiResponse,
-  Token,
-  Pool,
-  Checkpoints,
-} from "../types";
+import { Config, Dependecies, Contracts, Checkpoints } from "../types";
 import { totalVotingPower } from "../infrastructure/utils";
 
 export default class EpochsProcessor {

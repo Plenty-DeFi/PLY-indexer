@@ -320,6 +320,45 @@ export default class TzktProvider {
     }
   }
 
+  async getFeeClaimed<T>(params: { bigMap: string; epoch: string; token_id: string; amm: string }): Promise<[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key.epoch"]: params.epoch,
+          ["key.token_id"]: params.token_id,
+          ["key.amm"]: params.amm,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getBribeClaimed<T>(params: { bigMap: string; bribe_id: string; token_id: string }): Promise<[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key.token_id"]: params.token_id,
+          ["key.bribe_id"]: params.bribe_id,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getEpochTotalAmmVotes<T>(params: {
     bigMap: string;
     limit: number;

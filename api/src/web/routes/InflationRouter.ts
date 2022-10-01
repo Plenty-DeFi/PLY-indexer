@@ -4,7 +4,7 @@ import { range, votingPower, votingPowerFast } from "../../infrastructure/utils"
 import BigNumber from "bignumber.js";
 import { TezosToolkit } from "@taquito/taquito";
 
-function build({ dbClient, tzktProvider, contracts, config, cache }: Dependecies): Router {
+function build({ dbClient, tzktProvider, contracts }: Dependecies): Router {
   const router = Router();
   router.get("/", async (req: Request, res: Response) => {
     try {
@@ -13,10 +13,7 @@ function build({ dbClient, tzktProvider, contracts, config, cache }: Dependecies
       if (!address) {
         return res.status(400).json({ message: "MISSING_ADDRESS" });
       }
-      const data = cache.get(address);
-      if (data) {
-        return res.json(data);
-      }
+
       const locks = await dbClient.getAll({
         select: "*",
         table: "locks",
@@ -64,7 +61,6 @@ function build({ dbClient, tzktProvider, contracts, config, cache }: Dependecies
           return { id: lock.id, unclaimedInflation: resultArr.filter((x) => x.inflationShare !== "0") };
         });
         const finalResponse = await Promise.all(response);
-        cache.insert(address, finalResponse, config.ttl.data); //todo change ttl to next epoch end
         return res.json(finalResponse);
       } else {
         return res.json([]);

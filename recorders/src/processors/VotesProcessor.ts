@@ -7,6 +7,7 @@
 
 //fetching --> get lock ids from address --> get all votes where fee_claimed flase AND bribe_id_unclaimed length =0, get bribes, get total amm votes for each epch and calculate vote share
 
+import { asyncFilter } from "../infrastructure/utils";
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
 import {
@@ -60,13 +61,13 @@ export default class VotesProcessor {
         if (total_amm_votes.length === 0) {
           break;
         } else {
-          total_amm_votes.forEach(async (votes) => {
+          for (const votes of total_amm_votes) {
             await this._dbClient.insert({
               table: "total_amm_votes",
               columns: "(amm, epoch, value)",
               values: `('${votes.key.amm}', '${votes.key.epoch}', '${votes.value}')`,
             });
-          });
+          }
           offset += this._config.tzktOffset;
         }
       }
@@ -88,13 +89,14 @@ export default class VotesProcessor {
         if (total_token_votes.length === 0) {
           break;
         } else {
-          total_token_votes.forEach(async (votes) => {
+          for (const votes of total_token_votes) {
+            console.log("Inserting total token votes", votes.key.token_id, votes.key.epoch, votes.value);
             await this._dbClient.insert({
               table: "total_token_votes",
               columns: "(token_id, epoch, value)",
               values: `('${votes.key.token_id}', '${votes.key.epoch}', '${votes.value}')`,
             });
-          });
+          }
           offset += this._config.tzktOffset;
         }
       }
@@ -116,14 +118,24 @@ export default class VotesProcessor {
         if (total_amm_votes.length === 0) {
           break;
         } else {
-          total_amm_votes.forEach(async (votes) => {
+          for (const votes of total_amm_votes) {
             const bribes = await this._dbClient.getAll({
               select: "*",
               table: "bribes",
               where: `amm='${votes.key.amm}' AND epoch='${votes.key.epoch}'`,
             });
+
+            const finalBribes = await asyncFilter(bribes.rows, async (b: any) => {
+              const claimed = await this.checkBribeClaimed(votes.key.amm, votes.key.token_id, b.bribe_id);
+              return !claimed;
+            });
+
             //array to postgress array
+            const unclaimedBribeArray =
+              finalBribes.length != 0 ? `{${finalBribes.map((b) => b.bribe_id).join(",")}}` : "{}";
             const bribesArray = bribes.rowCount != 0 ? `{${bribes.rows.map((b) => b.bribe_id).join(",")}}` : "{}";
+
+            const feeClaimed = await this.checkFeeClaimed(votes.key.amm, votes.key.epoch, votes.key.token_id);
 
             const existingEntry = await this._dbClient.get({
               select: "*",
@@ -135,21 +147,17 @@ export default class VotesProcessor {
               await this._dbClient.insert({
                 table: "token_amm_votes",
                 columns: "(amm, epoch, token_id, value, fee_claimed, bribes, bribes_unclaimed)",
-                values: `('${votes.key.amm}', '${votes.key.epoch}', '${votes.key.token_id}', '${
-                  votes.value
-                }', ${false}, '${bribesArray}', '${bribesArray}')`,
+                values: `('${votes.key.amm}', '${votes.key.epoch}', '${votes.key.token_id}', '${votes.value}', ${feeClaimed}, '${bribesArray}', '${unclaimedBribeArray}')`,
               });
             } else {
               console.log("Updating Token AMM vote" + votes.key.amm + " " + votes.key.epoch + " " + votes.key.token_id);
               await this._dbClient.update({
                 table: "token_amm_votes",
-                set: `value='${
-                  votes.value
-                }', fee_claimed-${false}, bribes='${bribesArray}', bribes_unclaimed='${bribesArray}'`,
+                set: `value='${votes.value}', fee_claimed-${feeClaimed}, bribes='${bribesArray}', bribes_unclaimed='${unclaimedBribeArray}'`,
                 where: `amm='${votes.key.amm}' AND epoch='${votes.key.epoch}' AND token_id='${votes.key.token_id}'`,
               });
             }
-          });
+          }
           offset += this._config.tzktOffset;
         }
       }
@@ -192,6 +200,32 @@ export default class VotesProcessor {
     }
   }
 
+  async checkFeeClaimed(amm: string, epoch: string, tokenId: string): Promise<boolean> {
+    const feeClaimed = await this._tkztProvider.getFeeClaimed({
+      bigMap: this._contracts.bigMaps.fee_claim_ledger.toString(),
+      amm: amm,
+      epoch: epoch,
+      token_id: tokenId,
+    });
+    return feeClaimed.length !== 0;
+  }
+
+  async checkBribeClaimed(amm: string, tokenId: string, bribeId: string): Promise<boolean> {
+    const pool = (
+      await this._dbClient.get({
+        select: "*",
+        table: "pools",
+        where: `amm='${amm}'`,
+      })
+    ).rows[0];
+
+    const bribeClaimed = await this._tkztProvider.getBribeClaimed({
+      bigMap: pool.bribe_claim_ledger.toString(),
+      token_id: tokenId,
+      bribe_id: bribeId,
+    });
+    return bribeClaimed.length !== 0;
+  }
   async feesUpdates(level: string) {
     try {
       let offset = 0;
