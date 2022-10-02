@@ -137,10 +137,23 @@ export default class LocksProcessor {
       const attached: boolean = await this._getAttached(tokenId);
       console.log(attached);
       const epoch = await this._getEpoch(tokenId);
-      const claimedEpochs = await this._tkztProvider.getClaimedEpochs({
-        bigMap: this._contracts.bigMaps.claim_ledger.toString(),
-        token_id: tokenId,
-      });
+      const claimedEpochs: string[] = [];
+      let offset = 0;
+      while (true) {
+        const claimed = await this._tkztProvider.getClaimedEpochs({
+          bigMap: this._contracts.bigMaps.claim_ledger.toString(),
+          token_id: tokenId,
+          limit: this._config.tzktLimit,
+          offset,
+        });
+        if (claimed.length === 0) {
+          break;
+        } else {
+          claimedEpochs.push(...claimed);
+          offset += this._config.tzktOffset;
+        }
+      }
+
       const claimedEpochsSql = claimedEpochs.length != 0 ? `{${claimedEpochs.map((b) => b).join(",")}}` : "{}";
       const lockData = {
         ...values,
@@ -165,10 +178,22 @@ export default class LocksProcessor {
       const attached: boolean = await this._getAttached(tokenId);
       console.log(attached);
       const epoch = await this._getEpoch(tokenId);
-      const claimedEpochs = await this._tkztProvider.getClaimedEpochs({
-        bigMap: this._contracts.bigMaps.claim_ledger.toString(),
-        token_id: tokenId,
-      });
+      const claimedEpochs: string[] = [];
+      let offset = 0;
+      while (true) {
+        const claimed = await this._tkztProvider.getClaimedEpochs({
+          bigMap: this._contracts.bigMaps.claim_ledger.toString(),
+          token_id: tokenId,
+          limit: this._config.tzktLimit,
+          offset,
+        });
+        if (claimed.length === 0) {
+          break;
+        } else {
+          claimedEpochs.push(...claimed);
+          offset += this._config.tzktOffset;
+        }
+      }
       const claimedEpochsSql = claimedEpochs.length != 0 ? `{${claimedEpochs.map((b) => b).join(",")}}` : "{}";
       const lockData = {
         ...values,

@@ -262,12 +262,19 @@ export default class TzktProvider {
     }
   }
 
-  async getClaimedEpochs(params: { bigMap: string; token_id: string }): Promise<string[]> {
+  async getClaimedEpochs(params: {
+    bigMap: string;
+    token_id: string;
+    limit: number;
+    offset: number;
+  }): Promise<string[]> {
     try {
       const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
         params: {
           select: "key,value",
           ["key.token_id"]: params.token_id,
+          limit: params.limit,
+          offset: params.offset,
         },
         paramsSerializer: (params) => {
           return qs.stringify(params, { arrayFormat: "repeat" });
