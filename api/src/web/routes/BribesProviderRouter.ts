@@ -11,9 +11,8 @@ function build({ dbClient }: Dependecies): Router {
           table: "bribes",
           where: `provider='${provider}'`,
         });
-        return {
-          bribes: bribes.rows,
-        };
+        //console.log(bribes.rows);
+        return res.json(bribes.rows);
       } else {
         return res.status(400).json({ message: "address not provided" });
       }
