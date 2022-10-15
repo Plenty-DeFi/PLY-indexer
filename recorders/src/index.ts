@@ -11,6 +11,7 @@ import VotesProcessor from "./processors/VotesProcessor";
 import FeesProcessor from "./processors/FeesProcessor";
 import EpochsProcessor from "./processors/EpochsProcessor";
 import SlopesProcessor from "./processors/SlopeProcessor";
+import { addRetryToAxios } from "./utils";
 const dependencies = buildDependencies(config);
 
 const heartbeat = new HeartBeat(config);
@@ -26,6 +27,7 @@ const slopesProcessor = new SlopesProcessor(dependencies);
 (async () => {
   try {
     heartbeat.start();
+    addRetryToAxios();
     await dependencies.dbClient.init();
     locksProcesser.process();
     await poolsProcessor.process();

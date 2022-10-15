@@ -21,6 +21,7 @@ function build({ dbClient }: Dependecies): Router {
       return res.status(400).json({ message: e });
     }
   });
+  
   return router;
 }
 
