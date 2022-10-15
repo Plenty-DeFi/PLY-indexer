@@ -61,6 +61,59 @@ export default class TzktProvider {
     }
   }
 
+  async getLockValues<T>(params: { bigmap: string; tokenId: string }): Promise<T> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigmap}/keys`, {
+        params: {
+          select: "key,value",
+          key: params.tokenId,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      return res.data[0];
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getLocks<T>(params: { bigMap: string; limit: number; offset: number }): Promise<T> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          limit: params.limit,
+          offset: params.offset,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getLockAttached<T>(params: { bigmap: string; tokenId: string }): Promise<T> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigmap}/keys`, {
+        params: {
+          select: "key,value,active",
+          key: params.tokenId,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getLedgerData<T>(params: { tokenIds: string[]; bigMap: string; limit: number; offset: number }): Promise<T> {
     try {
       if (params.tokenIds.length > 1) {

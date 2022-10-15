@@ -19,4 +19,5 @@ export const config: Config = {
   configUrl: process.env.CONFIG_URL || "https://config.plentydefi.com/v1/config",
   networkIndexer: process.env.NETWORK_INDEXER || "https://networkanalyticsindexer.plentydefi.com",
   rpc: process.env.RPC || "https://rpc.tzkt.io/ghostnet",
+  startingBlock: process.env.STARTING_BLOCK || "1340055",
 };

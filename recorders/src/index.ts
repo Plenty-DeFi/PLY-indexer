@@ -29,25 +29,41 @@ const slopesProcessor = new SlopesProcessor(dependencies);
     heartbeat.start();
     addRetryToAxios();
     await dependencies.dbClient.init();
-    locksProcesser.process();
+    await locksProcesser.process();
     await poolsProcessor.process();
     await votesProcessor.process();
     await feesProcessor.process();
     //await slopesProcessor.process();
     await epochsProcessor.process();
     blockListener.listen();
-    blockListener.blockEmitter.on("newBlock", (b: BlockData) => {
-      console.log("block listener got a new block", b.level, b.hash);
-      setTimeout(async function () {
-        await locksProcesser.updateLocks(b.level);
-        await poolsProcessor.updatePools(b.level);
-        await bribesProcessor.updateBribes(b.level);
-        await positionProcessor.updatePositions(b.level);
-        await votesProcessor.epochUpdates(b.level);
-        //await slopesProcessor.updateSlopes(b.level);
-        await votesProcessor.votesUpdates(b.level);
-        await feesProcessor.updateFees(b.level);
-      }, 5000);
+    let processing = false;
+    let lastBlockProcessed = dependencies.config.startingBlock;
+
+    blockListener.blockEmitter.on("newBlock", async (b: BlockData) => {
+      if (processing || parseInt(b.level) < parseInt(lastBlockProcessed)) {
+        console.log("Task already running willl process ", b.level, " later");
+        return;
+      }
+      processing = true;
+      //console.log("block listener got a new block", b.level, b.hash);
+      try {
+        for (let i = parseInt(lastBlockProcessed) + 1; i <= parseInt(b.level); i++) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          console.log("Processing block", i);
+          await locksProcesser.updateLocks(b.level);
+          await poolsProcessor.updatePools(b.level);
+          await bribesProcessor.updateBribes(b.level);
+          await positionProcessor.updatePositions(b.level);
+          await votesProcessor.epochUpdates(b.level);
+          await votesProcessor.votesUpdates(b.level);
+          await feesProcessor.updateFees(b.level);
+          lastBlockProcessed = i.toString();
+        }
+        processing = false;
+      } catch (e) {
+        console.log("Error processing block", e);
+        processing = false;
+      }
     });
   } catch (err) {
     console.error(err.message);

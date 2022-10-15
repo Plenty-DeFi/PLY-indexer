@@ -24,7 +24,7 @@ export default class BlockMonitor {
       } else {
         this._lastBlockHash = block.hash;
         console.log(
-          `Found Block ${
+          `Found Block ${block.header.level.toString()} ${
             block.hash
           } at ${block.header.timestamp.toLocaleString()}`
         );

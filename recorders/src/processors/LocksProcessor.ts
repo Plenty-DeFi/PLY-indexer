@@ -29,52 +29,38 @@ export default class LocksProcessor {
 
   async process(): Promise<void> {
     try {
-      const query = gql`
-        query BigmapValuesQuery($id: BigNumber!, $limit: Int!, $after: Cursor) {
-          bigmap_keys(filter: { bigmap_id: $id }, first: $limit, after: $after) {
-            page_info {
-              has_next_page
-            }
-            edges {
-              cursor
-              node {
-                key
-                current_value {
-                  value
-                }
+      let offset = 0;
+      while (true) {
+        const locks: {
+          key: { nat: string; address: string };
+          value: string;
+        }[] = await this._tkztProvider.getLocks({
+          bigMap: this._contracts.bigMaps.ledger.toString(),
+          limit: this._config.tzktLimit,
+          offset,
+        });
+        if (locks.length === 0) {
+          break;
+        } else {
+          for (const lock of locks) {
+            if (lock.value === "1") {
+              await this._processLock(lock);
+            } else {
+              const existingEntry = await this._dbClient.get({
+                select: "*",
+                table: "locks",
+                where: `id=${lock.key.nat} AND owner='${lock.key.address}'`,
+              });
+              if (existingEntry.rowCount > 0) {
+                await this._dbClient.delete({
+                  table: "locks",
+                  where: `id=${lock.key.nat}`,
+                });
               }
             }
           }
+          offset += this._config.tzktOffset;
         }
-      `;
-      const variables: LocksQueryVariable = {
-        id: this._contracts.bigMaps.ledger.toString(),
-        limit: this._config.tezGraphLimit,
-      };
-      while (true) {
-        const data = await request(this._config.tezGraph, query, variables);
-        for (const lock of data.bigmap_keys.edges) {
-          if (lock.node.current_value.value === "1") {
-            await this._processLock(lock);
-          } else {
-            const existingEntry = await this._dbClient.get({
-              select: "*",
-              table: "locks",
-              where: `id=${lock.node.key[1]} AND owner='${lock.node.key[0]}'`,
-            });
-            if (existingEntry.rowCount > 0) {
-              await this._dbClient.delete({
-                table: "locks",
-                where: `id=${lock.node.key[1]}`,
-              });
-            }
-          }
-        }
-        if (!data.bigmap_keys.page_info.has_next_page) {
-          break;
-        }
-        let cursor = data.bigmap_keys.edges[variables.limit - 1].cursor;
-        variables.after = cursor;
       }
     } catch (err) {
       console.error("error a:", err);
@@ -169,9 +155,10 @@ export default class LocksProcessor {
     }
   }
 
-  private async _processLock(lock: any): Promise<void> {
+  private async _processLock(lock: { key: { nat: string; address: string }; value: string }): Promise<void> {
     try {
-      const [owner, tokenId]: string[] = Object.values(lock.node.key);
+      const owner = lock.key.address;
+      const tokenId = lock.key.nat;
       console.log(owner, tokenId);
       const values: LockValues = await this._getLockValues(tokenId);
       console.log(values);
@@ -226,56 +213,46 @@ export default class LocksProcessor {
 
   private async _getLockValues(tokenId: string): Promise<LockValues> {
     try {
-      const query = gql`
-        query BigmapValuesQuery($id: BigNumber!, $key: Micheline) {
-          bigmap_values(first: 1, filter: { bigmap_id: $id, key: $key }) {
-            edges {
-              node {
-                key
-                value
-              }
-            }
-          }
-        }
-      `;
-      const variables = {
-        key: tokenId,
-        id: this._contracts.bigMaps.locks.toString(),
-      };
-      const data = await request(this._config.tezGraph, query, variables);
-      return { base_value: data.bigmap_values.edges[0].node.value[0], end: data.bigmap_values.edges[0].node.value[1] };
+      const values: {
+        key: string;
+        value: {
+          base_value: string;
+          end: string;
+        };
+      } = await this._tkztProvider.getLockValues({
+        bigmap: this._contracts.bigMaps.locks.toString(),
+        tokenId: tokenId,
+      });
+
+      return { base_value: values.value.base_value, end: values.value.end };
     } catch (err) {
       throw err;
     }
   }
   private async _getAttached(tokenId: string): Promise<boolean> {
     try {
-      const query = gql`
-        query BigmapValuesQuery($id: BigNumber!, $key: Micheline) {
-          bigmap_values(first: 1, filter: { bigmap_id: $id, key: $key }) {
-            edges {
-              node {
-                key
-                value
-              }
-            }
-          }
-        }
-      `;
-      const variables = {
-        key: tokenId,
-        id: this._contracts.bigMaps.attached.toString(),
-      };
-      const data = await request(this._config.tezGraph, query, variables);
-      if (data.bigmap_values.edges.length === 0) {
+      const data: {
+        key: string;
+        value: {
+          base_value: string;
+          end: string;
+        };
+        active: boolean;
+      }[] = await this._tkztProvider.getLockAttached({
+        bigmap: this._contracts.bigMaps.attached.toString(),
+        tokenId: tokenId,
+      });
+
+      if (data.length === 0) {
         return false;
       } else {
-        return data.bigmap_values.edges[0].node.value !== null;
+        return data[0].active;
       }
     } catch (err) {
       throw err;
     }
   }
+
   private async _lockDbOperation(lockData: Lock): Promise<void> {
     try {
       const existingLock = await this._dbClient.get({

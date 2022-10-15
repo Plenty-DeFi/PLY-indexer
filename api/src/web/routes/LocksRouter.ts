@@ -85,8 +85,8 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
             currentEpoch,
             lock.id
           );
-          console.log("epcoh", epochtVotingPower);
-          console.log("used", usedVotingPower);
+          //console.log("epcoh", epochtVotingPower);
+          //console.log("used", usedVotingPower);
           return {
             id: lock.id,
             owner: lock.owner,

@@ -21,7 +21,6 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
     for (var x in all_token_checkpoints) {
       map1.set(all_token_checkpoints[x].key.nat_1, all_token_checkpoints[x].value);
     }
-
     if (ts < map1.get("1").ts) {
       throw "0";
     }
@@ -48,16 +47,16 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
       let low = 0;
       let mid = 0;
 
-      while (low < high && map1.get(mid + 1).ts != ts) {
+      while (low < high && map1.get((mid + 1).toString()).ts != ts) {
         mid = Math.floor((low + high + 1) / 2);
-        if (map1.get(mid + 1).ts < ts) {
+        if (map1.get((mid + 1).toString()).ts < ts) {
           low = mid;
         } else {
           high = mid - 1;
         }
       }
       if (map1.get(`${mid + 1}`).ts === ts) {
-        return map1.get(mid + 1).bias.toString();
+        return map1.get((mid + 1).toString()).bias.toString();
       } else {
         const ob = map1.get(`${low + 1}`);
         const bias = new BigNumber(ob.bias);
@@ -296,9 +295,9 @@ export const calculateAPR = async (
     .div(10 ** pool.token2_decimals);
 
   const poolDollarValue = token1DollarValue.plus(token2DollarValue);
-  console.log("poolDollar", poolDollarValue.toString());
+  //console.log("poolDollar", poolDollarValue.toString());
   const plyDollarValue = amm_emission.multipliedBy(getPrice(contracts.ply.address, "0")).div(10 ** 18);
-  console.log("plyDollar", plyDollarValue.toString(), amm_supply);
+  //console.log("plyDollar", plyDollarValue.toString(), amm_supply);
 
   const apr = new BigNumber(plyDollarValue).div(poolDollarValue).times(100 * 52);
   return isNaN(apr.toNumber()) ? "0" : apr.toString();
