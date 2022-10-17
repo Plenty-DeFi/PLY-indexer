@@ -207,6 +207,7 @@ export const votingPowerFast = (ts2: number, time: number, map1: Map<any, any>, 
 }; */
 
 export const getPrice = (tokenAddress: string, tokenId: string) => {
+  //todo change it to analytics price
   if (tokenAddress === "KT1ArfQ6At3NhzMbiGwLzGtvekytjXq6Gy2G") {
     return 0.1;
   } else if (tokenAddress == "KT1Q4qRd8mKS7eWUgTfJzCN8RC6h9CzzjVJb") {
@@ -266,6 +267,47 @@ export const getRealEmission = async (tzktProvider: TzktProvider, contracts: Con
 };
 
 export const calculateAPR = async (
+  contracts: Contracts,
+  tzktProvider: TzktProvider,
+  pool: Pool,
+  currentEpoch: string
+) => {
+  let epoch = `${Number(currentEpoch) - 1}`;
+  const amm_votes = new BigNumber(
+    await tzktProvider.getAmmVotes(contracts.bigMaps.total_amm_votes.toString(), epoch, pool.amm)
+  );
+  const epoch_votes = new BigNumber(
+    await tzktProvider.getEpochVotes(contracts.bigMaps.total_epoch_votes.toString(), epoch)
+  );
+  const vote_share = amm_votes.div(epoch_votes).times(100);
+
+  const emission = await tzktProvider.getEmissionData(contracts.voter.address);
+
+  const amm_emission = new BigNumber(emission.real).multipliedBy(vote_share).div(100);
+
+  const amm_supply = await tzktProvider.getAmmPoolValues(pool.amm);
+
+  const token1Price = getPrice(pool.token1, pool.token1_id?.toString());
+
+  const token2Price = getPrice(pool.token2, pool.token2_id?.toString());
+
+  const token1DollarValue = new BigNumber(amm_supply.token1Pool)
+    .multipliedBy(token1Price)
+    .div(10 ** pool.token1_decimals);
+  const token2DollarValue = new BigNumber(amm_supply.token2Pool)
+    .multipliedBy(token2Price)
+    .div(10 ** pool.token2_decimals);
+
+  const poolDollarValue = token1DollarValue.plus(token2DollarValue);
+  //console.log("poolDollar", poolDollarValue.toString());
+  const plyDollarValue = amm_emission.multipliedBy(getPrice(contracts.ply.address, "0")).div(10 ** 18);
+  //console.log("plyDollar", plyDollarValue.toString(), amm_supply);
+
+  const apr = new BigNumber(plyDollarValue).div(poolDollarValue).times(100 * 52);
+  return isNaN(apr.toNumber()) ? "0" : apr.toString();
+};
+
+export const calculateFutureAPR = async (
   contracts: Contracts,
   tzktProvider: TzktProvider,
   pool: Pool,

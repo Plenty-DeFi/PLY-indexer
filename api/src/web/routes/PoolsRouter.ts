@@ -25,8 +25,8 @@ function build({ dbClient, contracts, tzktProvider, getData, getAPR }: Dependeci
           return res.json({
             pool: getMainnetAddress(pool.amm),
             bribes: bribes.rows,
-            apr: APRs[pool.amm] || 0,
-            previousApr: 0,
+            apr: APRs[pool.amm] ? APRs[pool.amm].current : "0",
+            futureApr: APRs[pool.amm] ? APRs[pool.amm].future : "0",
           });
         } else {
           return res.status(400).json({ message: "AMM_NOT_EXIST" });
@@ -45,12 +45,12 @@ function build({ dbClient, contracts, tzktProvider, getData, getAPR }: Dependeci
               table: "bribes",
               where: `amm='${pool.amm}' AND epoch='${currentEpoch}'`,
             });
-            const apr = APRs[pool.amm] || 0;
+
             return {
               pool: getMainnetAddress(pool.amm),
               bribes: bribes.rows,
-              apr,
-              previousApr: 0,
+              apr: APRs[pool.amm] ? APRs[pool.amm].current : "0",
+              futureApr: APRs[pool.amm] ? APRs[pool.amm].future : "0",
             };
           });
 

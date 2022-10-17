@@ -7,7 +7,7 @@ function build({ dbClient }: Dependecies): Router {
       const provider = req.query.address as string;
       if (provider) {
         const bribes = await dbClient.getAll({
-          select: "value, name, amm, epoch",
+          select: "value, name, amm, epoch, price",
           table: "bribes",
           where: `provider='${provider}'`,
         });
@@ -21,7 +21,7 @@ function build({ dbClient }: Dependecies): Router {
       return res.status(400).json({ message: e });
     }
   });
-  
+
   return router;
 }
 

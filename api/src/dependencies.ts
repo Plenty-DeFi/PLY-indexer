@@ -4,7 +4,7 @@ import { Config, Dependecies, Data, APR, Contracts, Pool } from "./types";
 import TzktProvider from "./infrastructure/TzktProvider";
 import DatabaseClient from "./infrastructure/DatabaseClient";
 import Cache from "./infrastructure/Cache";
-import { calculateAPR, getRealEmission } from "./infrastructure/utils";
+import { calculateAPR, calculateFutureAPR, getRealEmission } from "./infrastructure/utils";
 
 const getDataBuilder = (cache: Cache, config: Config) => async (): Promise<Data> => {
   try {
@@ -47,8 +47,12 @@ const getAPR =
         const currentEpoch = await tzktProvider.getCurrentEpoch(contracts.voter.address);
         const realEmission = await getRealEmission(tzktProvider, contracts);
         for (const pool of pools) {
-          const aprPool = await calculateAPR(contracts, tzktProvider, pool, currentEpoch, realEmission);
-          apr[pool.amm] = aprPool;
+          const futureApr = await calculateFutureAPR(contracts, tzktProvider, pool, currentEpoch, realEmission);
+          const currentApr = await calculateAPR(contracts, tzktProvider, pool, currentEpoch);
+          apr[pool.amm] = {
+            current: currentApr,
+            future: futureApr,
+          };
         }
         console.log(apr);
         cache.insert("apr", apr, config.ttl.data);

@@ -37,7 +37,10 @@ export interface Token {
 }
 
 export interface APR {
-  [key: string]: string;
+  [key: string]: {
+    current: string;
+    future: string;
+  };
 }
 export interface Contracts {
   voteEscrow: {
