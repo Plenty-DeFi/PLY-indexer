@@ -52,9 +52,10 @@ export default class BribesProcessor {
   private async _processBribe(bribe: BribeApiResponse, amm: string, tokens: Token[]) {
     try {
       const tokenSymbol = getTokenSymbol(bribe.value.bribe.type, tokens);
-      const price = (await axios.get(this._config.networkIndexer + "/analytics/tokens/" + tokenSymbol)).data[0].price
-        .value;
-      /* const price = "1"; //todo change later */
+      const price =
+        (await axios.get(this._config.networkIndexer + "/analytics/tokens")).data.find(
+          (token: any) => token.token === tokenSymbol
+        ).price.value || "0";
       console.log("Inserting Bribe", amm, tokenSymbol, bribe.value.bribe.value, price);
       await this._dbClient.insert({
         table: "bribes",

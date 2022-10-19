@@ -32,6 +32,45 @@ const getDataBuilder = (cache: Cache, config: Config) => async (): Promise<Data>
   }
 };
 
+const getPrices = async (cache: Cache, config: Config, tokenSymbol: string): Promise<string> => {
+  try {
+    let data:
+      | {
+          [key: string]: string;
+        }
+      | undefined = cache.get("prices");
+    //console.log("data", data);
+    if (!data) {
+      const prices: [] = (
+        await axios.get(config.networkIndexer + "/analytics/tokens", {
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
+          },
+        })
+      ).data;
+
+      let result = prices.reduce(function (
+        map: { [key: string]: string },
+        obj: { token: string; price: { value: string } }
+      ) {
+        map[obj.token] = obj.price.value;
+        return map;
+      },
+      {});
+
+      cache.insert("prices", result, config.ttl.data);
+      //console.log("prices", result);
+      return result[tokenSymbol];
+    } else {
+      return data[tokenSymbol];
+    }
+  } catch (err) {
+    throw err;
+    return "0";
+  }
+};
+
 const getAPR =
   (cache: Cache, config: Config, dbClient: DatabaseClient, tzktProvider: TzktProvider, contracts: Contracts) =>
   async (): Promise<APR> => {
@@ -47,14 +86,34 @@ const getAPR =
         const currentEpoch = await tzktProvider.getCurrentEpoch(contracts.voter.address);
         const realEmission = await getRealEmission(tzktProvider, contracts);
         for (const pool of pools) {
-          const futureApr = await calculateFutureAPR(contracts, tzktProvider, pool, currentEpoch, realEmission);
-          const currentApr = await calculateAPR(contracts, tzktProvider, pool, currentEpoch);
+          const token1Price = await getPrices(cache, config, pool.token1_symbol);
+          const token2Price = await getPrices(cache, config, pool.token2_symbol);
+          const plyPrice = "1"; //todo change later
+          const futureApr = await calculateFutureAPR(
+            contracts,
+            tzktProvider,
+            pool,
+            currentEpoch,
+            realEmission,
+            token1Price,
+            token2Price,
+            plyPrice
+          );
+          const currentApr = await calculateAPR(
+            contracts,
+            tzktProvider,
+            pool,
+            currentEpoch,
+            token1Price,
+            token2Price,
+            plyPrice
+          );
           apr[pool.amm] = {
             current: currentApr,
             future: futureApr,
           };
         }
-        console.log(apr);
+        //console.log(apr);
         cache.insert("apr", apr, config.ttl.data);
       }
       return apr;

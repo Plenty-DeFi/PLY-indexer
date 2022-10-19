@@ -278,7 +278,7 @@ export default class TzktProvider {
   async getAllTokenCheckpoints(tokenId: number): Promise<AlltokenCheckpoints[]> {
     try {
       // mapid variable
-      const res = await axios.get(`${this._tzktURL}/bigmaps/190034/keys?key.nat_0="${tokenId}"&select=key,value`); //todo ask udit
+      const res = await axios.get(`${this._tzktURL}/bigmaps/190034/keys?key.nat_0="${tokenId}"&select=key,value`); 
       if (res.data.length === 0) {
         throw "Lock does not exist";
       }

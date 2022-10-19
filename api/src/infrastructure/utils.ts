@@ -229,41 +229,45 @@ export const calculateAPR = async (
   contracts: Contracts,
   tzktProvider: TzktProvider,
   pool: Pool,
-  currentEpoch: string
+  currentEpoch: string,
+  token1Price: string,
+  token2Price: string,
+  plyPrice: string
 ) => {
-  let epoch = `${Number(currentEpoch) - 1}`;
-  const amm_votes = new BigNumber(
-    await tzktProvider.getAmmVotes(contracts.bigMaps.total_amm_votes.toString(), epoch, pool.amm)
-  );
-  const epoch_votes = new BigNumber(
-    await tzktProvider.getEpochVotes(contracts.bigMaps.total_epoch_votes.toString(), epoch)
-  );
-  const vote_share = amm_votes.div(epoch_votes).times(100);
+  try {
+    let epoch = `${Number(currentEpoch) - 1}`;
+    const amm_votes = new BigNumber(
+      await tzktProvider.getAmmVotes(contracts.bigMaps.total_amm_votes.toString(), epoch, pool.amm)
+    );
+    const epoch_votes = new BigNumber(
+      await tzktProvider.getEpochVotes(contracts.bigMaps.total_epoch_votes.toString(), epoch)
+    );
+    const vote_share = amm_votes.div(epoch_votes).times(100);
 
-  const emission = await tzktProvider.getEmissionData(contracts.voter.address);
+    const emission = await tzktProvider.getEmissionData(contracts.voter.address);
 
-  const amm_emission = new BigNumber(emission.real).multipliedBy(vote_share).div(100);
+    const amm_emission = new BigNumber(emission.real).multipliedBy(vote_share).div(100);
 
-  const amm_supply = await tzktProvider.getAmmPoolValues(pool.amm);
+    const amm_supply = await tzktProvider.getAmmPoolValues(pool.amm);
 
-  const token1Price = new BigNumber(await getPrice(pool.token1_symbol));
+    const token1DollarValue = new BigNumber(amm_supply.token1Pool)
+      .multipliedBy(new BigNumber(token1Price))
+      .div(10 ** pool.token1_decimals);
+    const token2DollarValue = new BigNumber(amm_supply.token2Pool)
+      .multipliedBy(new BigNumber(token2Price))
+      .div(10 ** pool.token2_decimals);
 
-  const token2Price = new BigNumber(await getPrice(pool.token2_symbol));
+    const poolDollarValue = token1DollarValue.plus(token2DollarValue);
+    //console.log("poolDollar", poolDollarValue.toString());
+    const plyDollarValue = amm_emission.multipliedBy(new BigNumber(plyPrice)).div(10 ** 18);
+    //console.log("plyDollar", plyDollarValue.toString(), amm_supply);
 
-  const token1DollarValue = new BigNumber(amm_supply.token1Pool)
-    .multipliedBy(token1Price)
-    .div(10 ** pool.token1_decimals);
-  const token2DollarValue = new BigNumber(amm_supply.token2Pool)
-    .multipliedBy(token2Price)
-    .div(10 ** pool.token2_decimals);
-
-  const poolDollarValue = token1DollarValue.plus(token2DollarValue);
-  //console.log("poolDollar", poolDollarValue.toString());
-  const plyDollarValue = amm_emission.multipliedBy(new BigNumber(1)).div(10 ** 18); //todo change it to analytics price PLY
-  //console.log("plyDollar", plyDollarValue.toString(), amm_supply);
-
-  const apr = new BigNumber(plyDollarValue).div(poolDollarValue).times(100 * 52);
-  return isNaN(apr.toNumber()) ? "0" : apr.toString();
+    const apr = new BigNumber(plyDollarValue).div(poolDollarValue).times(100 * 52);
+    return isNaN(apr.toNumber()) ? "0" : apr.toString();
+  } catch (e) {
+    console.log(e);
+    return "0";
+  }
 };
 
 export const calculateFutureAPR = async (
@@ -271,37 +275,41 @@ export const calculateFutureAPR = async (
   tzktProvider: TzktProvider,
   pool: Pool,
   currentEpoch: string,
-  emission_real: BigNumber
+  emission_real: BigNumber,
+  token1Price: string,
+  token2Price: string,
+  plyPrice: string
 ) => {
-  const amm_votes = new BigNumber(
-    await tzktProvider.getAmmVotes(contracts.bigMaps.total_amm_votes.toString(), currentEpoch, pool.amm)
-  );
-  const epoch_votes = new BigNumber(
-    await tzktProvider.getEpochVotes(contracts.bigMaps.total_epoch_votes.toString(), currentEpoch)
-  );
-  const vote_share = amm_votes.div(epoch_votes).times(100);
-  const amm_emission = new BigNumber(emission_real).multipliedBy(vote_share).div(100);
+  try {
+    const amm_votes = new BigNumber(
+      await tzktProvider.getAmmVotes(contracts.bigMaps.total_amm_votes.toString(), currentEpoch, pool.amm)
+    );
+    const epoch_votes = new BigNumber(
+      await tzktProvider.getEpochVotes(contracts.bigMaps.total_epoch_votes.toString(), currentEpoch)
+    );
+    const vote_share = amm_votes.div(epoch_votes).times(100);
+    const amm_emission = new BigNumber(emission_real).multipliedBy(vote_share).div(100);
 
-  const amm_supply = await tzktProvider.getAmmPoolValues(pool.amm);
+    const amm_supply = await tzktProvider.getAmmPoolValues(pool.amm);
 
-  const token1Price = new BigNumber(await getPrice(pool.token1_symbol));
+    const token1DollarValue = new BigNumber(amm_supply.token1Pool)
+      .multipliedBy(new BigNumber(token1Price))
+      .div(10 ** pool.token1_decimals);
+    const token2DollarValue = new BigNumber(amm_supply.token2Pool)
+      .multipliedBy(new BigNumber(token2Price))
+      .div(10 ** pool.token2_decimals);
 
-  const token2Price = new BigNumber(await getPrice(pool.token2_symbol));
+    const poolDollarValue = token1DollarValue.plus(token2DollarValue);
+    //console.log("poolDollar", poolDollarValue.toString());
+    const plyDollarValue = amm_emission.multipliedBy(new BigNumber(plyPrice)).div(10 ** 18);
+    //console.log("plyDollar", plyDollarValue.toString(), amm_supply);
 
-  const token1DollarValue = new BigNumber(amm_supply.token1Pool)
-    .multipliedBy(token1Price)
-    .div(10 ** pool.token1_decimals);
-  const token2DollarValue = new BigNumber(amm_supply.token2Pool)
-    .multipliedBy(token2Price)
-    .div(10 ** pool.token2_decimals);
-
-  const poolDollarValue = token1DollarValue.plus(token2DollarValue);
-  //console.log("poolDollar", poolDollarValue.toString());
-  const plyDollarValue = amm_emission.multipliedBy(new BigNumber(1)).div(10 ** 18); // todo change to ply price later
-  //console.log("plyDollar", plyDollarValue.toString(), amm_supply);
-
-  const apr = new BigNumber(plyDollarValue).div(poolDollarValue).times(100 * 52);
-  return isNaN(apr.toNumber()) ? "0" : apr.toString();
+    const apr = new BigNumber(plyDollarValue).div(poolDollarValue).times(100 * 52);
+    return isNaN(apr.toNumber()) ? "0" : apr.toString();
+  } catch (e) {
+    console.log(e);
+    return "0";
+  }
 };
 
 export const getToken = (type: TokenType, tokens: Token[]): string => {
