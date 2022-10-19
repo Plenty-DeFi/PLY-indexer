@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { Dependecies, TokenType } from "../../types";
-import { calculateAPR, getMainnetAddress, getRealEmission, getToken } from "../../infrastructure/utils";
+import { calculateAPR, getRealEmission, getToken } from "../../infrastructure/utils";
 
 function build({ dbClient, contracts, tzktProvider, getData }: Dependecies): Router {
   const router = Router();
@@ -22,7 +22,7 @@ function build({ dbClient, contracts, tzktProvider, getData }: Dependecies): Rou
             });
 
             return {
-              pool: getMainnetAddress(pool.amm),
+              pool: pool.amm,
               bribes: bribes.rows,
             };
           });

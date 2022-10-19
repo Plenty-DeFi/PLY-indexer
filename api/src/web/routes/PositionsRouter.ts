@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { Dependecies, TokenType } from "../../types";
-import { calculateAPR, getMainnetAddress, getRealEmission, getToken } from "../../infrastructure/utils";
+import { calculateAPR, getRealEmission, getToken } from "../../infrastructure/utils";
 
 function build({ dbClient, contracts, tzktProvider, getData, getAPR }: Dependecies): Router {
   const router = Router();
