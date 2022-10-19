@@ -261,7 +261,7 @@ export default class LocksProcessor {
         where: `id = '${lockData.tokenId}'`,
       });
       if (existingLock.rowCount === 0) {
-        console.log("Inseting Lock ${lockData.tokenId}");
+        console.log(`Inseting Lock ${lockData.tokenId}`);
         await this._dbClient.insert({
           table: "locks",
           columns: "(id, owner, base_value, end_ts, attached, epoch, claimed_epochs)",
@@ -271,13 +271,13 @@ export default class LocksProcessor {
         const existingEntry = await this._dbClient.get({
           select: "*",
           table: "locks",
-          where: `id=${lockData.tokenId} AND owner='${lockData.owner}' AND base_value='${lockData.base_value}' AND end_ts='${lockData.end}' AND attached=${lockData.attached} AND epoch='${lockData.epoch}' AND claimed_epochs='${lockData.claimedEpochs}'`,
+          where: `id=${lockData.tokenId} AND owner='${lockData.owner}' AND base_value='${lockData.base_value}' AND end_ts='${lockData.end}' AND attached=${lockData.attached} AND claimed_epochs='${lockData.claimedEpochs}'`,
         });
         if (existingEntry.rowCount === 0) {
           console.log("Updating Lock ${lockData.tokenId}");
           await this._dbClient.update({
             table: "locks",
-            set: `owner='${lockData.owner}', base_value='${lockData.base_value}', end_ts='${lockData.end}', attached=${lockData.attached}, epoch='${lockData.epoch}', claimed_epochs='${lockData.claimedEpochs}'`,
+            set: `owner='${lockData.owner}', base_value='${lockData.base_value}', end_ts='${lockData.end}', attached=${lockData.attached}, claimed_epochs='${lockData.claimedEpochs}'`,
             where: `id=${lockData.tokenId}`,
           });
         } else {

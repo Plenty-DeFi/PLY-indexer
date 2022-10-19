@@ -287,7 +287,7 @@ export default class VotesProcessor {
           } else {
             for (const update of updates) {
               if (update.action === "add_key") {
-                console.log("Briged claimed", update.content.key.token_id, update.content.key.bribe_id);
+                console.log("Bribe claimed", update.content.key.token_id, update.content.key.bribe_id);
                 await this._dbClient.update({
                   table: "token_amm_votes",
                   set: `bribes_unclaimed = array_remove(bribes_unclaimed, ${update.content.key.bribe_id})`,
@@ -362,7 +362,9 @@ export default class VotesProcessor {
               where: `amm='${votes.key.amm}' AND epoch='${votes.key.epoch}' AND token_id='${votes.key.token_id}'`,
             });
             if (existingEntry.rowCount === 0) {
-              console.log("Inseting Token AMM vote" + votes.key.amm + " " + votes.key.epoch + " " + votes.key.token_id);
+              console.log(
+                "Inserting Token AMM vote" + votes.key.amm + " " + votes.key.epoch + " " + votes.key.token_id
+              );
               await this._dbClient.insert({
                 table: "token_amm_votes",
                 columns: "(amm, epoch, token_id, value, fee_claimed, bribes, bribes_unclaimed)",

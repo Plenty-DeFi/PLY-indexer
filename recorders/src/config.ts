@@ -19,5 +19,5 @@ export const config: Config = {
   configUrl: process.env.CONFIG_URL || "https://config.plenty.network/v1/config",
   networkIndexer: process.env.NETWORK_INDEXER || "https://analytics-indexer.plenty.network",
   rpc: process.env.RPC || "https://rpc.tzkt.io/ghostnet",
-  startingBlock: process.env.STARTING_BLOCK || "1360183",
+  startingBlock: process.env.STARTING_BLOCK || "1361313",
 };

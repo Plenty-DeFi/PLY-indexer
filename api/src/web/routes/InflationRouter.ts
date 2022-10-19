@@ -24,7 +24,7 @@ function build({ dbClient, tzktProvider, contracts }: Dependecies): Router {
         //console.log(locksAll);
         const response = locks.rows.map(async (lock) => {
           const currentEpoch = await tzktProvider.getCurrentEpoch(contracts.voter.address);
-          const validArr: string[] = range(parseInt(lock.epoch), parseInt(currentEpoch));
+          const validArr: string[] = range(parseInt(lock.epoch) + 1, parseInt(currentEpoch));
           const unclaimedEpochs = validArr.filter((el) => !lock.claimed_epochs.includes(el));
           const alltokenCheckpoints = await tzktProvider.getAllTokenCheckpoints(lock.id);
           const map1 = new Map();
@@ -39,7 +39,7 @@ function build({ dbClient, tzktProvider, contracts }: Dependecies): Router {
               where: `epoch='${epoch}'`,
             });
             const epochEnd = epochData.rowCount > 0 ? epochData.rows[0].epoch_end_ts : "0";
-            const ts = parseInt(epochEnd) - 7 * 480;
+            const ts = parseInt(epochEnd) - 7 * 480; //todo change later
             const totalVotingPower =
               epochData.rowCount > 0 ? new BigNumber(epochData.rows[0].epoch_total_vp) : new BigNumber(0);
             const tokenVotingPower = new BigNumber(votingPowerFast(ts, 1, map1, sec));
