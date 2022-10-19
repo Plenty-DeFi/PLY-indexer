@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import { Dependecies, TokenType } from "../../types";
-import { calculateAPR, getMainnetAddress, getRealEmission, getToken } from "../../infrastructure/utils";
+import { calculateAPR, getRealEmission, getToken } from "../../infrastructure/utils";
 
 function build({ dbClient, contracts, tzktProvider, getData, getAPR }: Dependecies): Router {
   const router = Router();
@@ -23,7 +23,7 @@ function build({ dbClient, contracts, tzktProvider, getData, getAPR }: Dependeci
             where: `amm='${pool.amm}' AND epoch='${currentEpoch}'`,
           });
           return res.json({
-            pool: getMainnetAddress(pool.amm),
+            pool: pool.amm,
             bribes: bribes.rows,
             apr: APRs[pool.amm] ? APRs[pool.amm].current : "0",
             futureApr: APRs[pool.amm] ? APRs[pool.amm].future : "0",
@@ -47,7 +47,7 @@ function build({ dbClient, contracts, tzktProvider, getData, getAPR }: Dependeci
             });
 
             return {
-              pool: getMainnetAddress(pool.amm),
+              pool: pool.amm,
               bribes: bribes.rows,
               apr: APRs[pool.amm] ? APRs[pool.amm].current : "0",
               futureApr: APRs[pool.amm] ? APRs[pool.amm].future : "0",
