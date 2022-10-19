@@ -12,6 +12,7 @@ export interface Config {
   tezGraph: string;
   tezGraphLimit: number;
   rpc: string;
+  networkIndexer: string;
   postgres: {
     username: string;
     database: string;

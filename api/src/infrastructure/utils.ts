@@ -2,12 +2,12 @@ import BigNumber from "bignumber.js";
 import TzktProvider from "./TzktProvider";
 import { config } from "../config";
 import { AlltokenCheckpoints, Contracts, Pool, Token, TokenType } from "../types";
-
+import axios from "axios";
 const TzktObj = new TzktProvider(config);
 
 export const votingPower = async (tokenId: number, ts2: number, time: number) => {
   try {
-    let factor: number = 7 * 480; // todo change later to 7 * 86400
+    let factor: number = 7 * 86400; // todo change later to 7 * 86400
     if (time === 0) {
       factor = 1;
     }
@@ -76,7 +76,7 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
 
 export const votingPowerFast = (ts2: number, time: number, map1: Map<any, any>, sec: string) => {
   try {
-    let factor: number = 7 * 480; // todo change later to 7 * 86400
+    let factor: number = 7 * 86400; // todo change later to 7 * 86400
     if (time === 0) {
       factor = 1;
     }
@@ -206,51 +206,10 @@ export const votingPowerFast = (ts2: number, time: number, map1: Map<any, any>, 
   }
 }; */
 
-export const getPrice = (tokenAddress: string, tokenId: string) => {
+export const getPrice = async (tokenSymbol: string) => {
+  const price = (await axios.get(config.networkIndexer + "/analytics/tokens/" + tokenSymbol)).data[0].price.value;
+  return price.toString();
   //todo change it to analytics price
-  if (tokenAddress === "KT1ArfQ6At3NhzMbiGwLzGtvekytjXq6Gy2G") {
-    return 0.1;
-  } else if (tokenAddress == "KT1Q4qRd8mKS7eWUgTfJzCN8RC6h9CzzjVJb") {
-    return 1.8;
-  } else if (tokenAddress === "KT1Uw1oio434UoWFuZTNKFgt5wTM9tfuf7m7") {
-    if (tokenId === "0") {
-      return 1500;
-    } else if (tokenId === "1") {
-      return 22000;
-    } else if (tokenId === "2") {
-      return 1;
-    } else if (tokenId === "3") {
-      return 1;
-    } else if (tokenId === "4") {
-      return 1.5;
-    } else {
-      return 0;
-    }
-  } else {
-    return 1.8;
-  }
-};
-
-export const getTokenDecimal = (tokenAddress: string, tokenId: string) => {
-  if (tokenAddress === "KT1ArfQ6At3NhzMbiGwLzGtvekytjXq6Gy2G") {
-    return 18;
-  } else if (tokenAddress === "KT1Uw1oio434UoWFuZTNKFgt5wTM9tfuf7m7") {
-    if (tokenId === "0") {
-      return 18;
-    } else if (tokenId === "1") {
-      return 8;
-    } else if (tokenId === "2") {
-      return 6;
-    } else if (tokenId === "3") {
-      return 6;
-    } else if (tokenId === "4") {
-      return 18;
-    } else {
-      return 18;
-    }
-  } else {
-    return 6;
-  }
 };
 
 export const getRealEmission = async (tzktProvider: TzktProvider, contracts: Contracts) => {
@@ -287,9 +246,9 @@ export const calculateAPR = async (
 
   const amm_supply = await tzktProvider.getAmmPoolValues(pool.amm);
 
-  const token1Price = getPrice(pool.token1, pool.token1_id?.toString());
+  const token1Price = new BigNumber(await getPrice(pool.token1_symbol));
 
-  const token2Price = getPrice(pool.token2, pool.token2_id?.toString());
+  const token2Price = new BigNumber(await getPrice(pool.token2_symbol));
 
   const token1DollarValue = new BigNumber(amm_supply.token1Pool)
     .multipliedBy(token1Price)
@@ -300,7 +259,7 @@ export const calculateAPR = async (
 
   const poolDollarValue = token1DollarValue.plus(token2DollarValue);
   //console.log("poolDollar", poolDollarValue.toString());
-  const plyDollarValue = amm_emission.multipliedBy(getPrice(contracts.ply.address, "0")).div(10 ** 18);
+  const plyDollarValue = amm_emission.multipliedBy(new BigNumber(1)).div(10 ** 18); //todo change it to analytics price PLY
   //console.log("plyDollar", plyDollarValue.toString(), amm_supply);
 
   const apr = new BigNumber(plyDollarValue).div(poolDollarValue).times(100 * 52);
@@ -325,9 +284,9 @@ export const calculateFutureAPR = async (
 
   const amm_supply = await tzktProvider.getAmmPoolValues(pool.amm);
 
-  const token1Price = getPrice(pool.token1, pool.token1_id?.toString());
+  const token1Price = new BigNumber(await getPrice(pool.token1_symbol));
 
-  const token2Price = getPrice(pool.token2, pool.token2_id?.toString());
+  const token2Price = new BigNumber(await getPrice(pool.token2_symbol));
 
   const token1DollarValue = new BigNumber(amm_supply.token1Pool)
     .multipliedBy(token1Price)
@@ -338,7 +297,7 @@ export const calculateFutureAPR = async (
 
   const poolDollarValue = token1DollarValue.plus(token2DollarValue);
   //console.log("poolDollar", poolDollarValue.toString());
-  const plyDollarValue = amm_emission.multipliedBy(getPrice(contracts.ply.address, "0")).div(10 ** 18);
+  const plyDollarValue = amm_emission.multipliedBy(new BigNumber(1)).div(10 ** 18); // todo change to ply price later
   //console.log("plyDollar", plyDollarValue.toString(), amm_supply);
 
   const apr = new BigNumber(plyDollarValue).div(poolDollarValue).times(100 * 52);

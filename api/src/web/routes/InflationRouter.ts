@@ -39,7 +39,7 @@ function build({ dbClient, tzktProvider, contracts }: Dependecies): Router {
               where: `epoch='${epoch}'`,
             });
             const epochEnd = epochData.rowCount > 0 ? epochData.rows[0].epoch_end_ts : "0";
-            const ts = parseInt(epochEnd) - 7 * 480; //todo change later
+            const ts = parseInt(epochEnd) - 7 * 86400; //todo change later
             const totalVotingPower =
               epochData.rowCount > 0 ? new BigNumber(epochData.rows[0].epoch_total_vp) : new BigNumber(0);
             const tokenVotingPower = new BigNumber(votingPowerFast(ts, 1, map1, sec));

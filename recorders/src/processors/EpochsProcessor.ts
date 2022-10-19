@@ -77,7 +77,7 @@ export default class EpochsProcessor {
         where: `epoch = '${epoch}'`,
       });
       if (existingEpoch.rowCount === 0) {
-        const ts = parseInt(epochEndTs) - 7 * 480;
+        const ts = parseInt(epochEndTs) - 7 * 86400;
         const totalVp = await totalVotingPower({
           rpc: this._config.rpc,
           ts: ts.toString(),

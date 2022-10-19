@@ -29,7 +29,7 @@ const slopesProcessor = new SlopesProcessor(dependencies);
     heartbeat.start();
     addRetryToAxios();
     await dependencies.dbClient.init();
-    //await locksProcesser.process();
+    await locksProcesser.process();
     await poolsProcessor.process();
     await votesProcessor.process();
     await feesProcessor.process();

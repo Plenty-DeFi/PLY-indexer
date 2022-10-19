@@ -1,36 +1,36 @@
 {
   "voteEscrow": {
-    "address": "KT1LuyczajtnU8PMsyqsWNYtZLRG7kbiseKs"
+    "address": "KT1SJubny9Y6xsgDakqYSEofqodgbnxHCSMu"
   },
   "ply": {
-    "address": "KT1ArfQ6At3NhzMbiGwLzGtvekytjXq6Gy2G"
+    "address": "KT1BxKvsSCKTJ9XrmkjQRDQfh5mZBb14ue8D"
   },
   "veSwap": {
-    "address": "KT1TfpTQsyEEwDJUKSsBwR9GKrLXxZjz7uxB"
+    "address": "KT1Ba3Sb4KrZrJgXdEN1TLKvzPZ4nsAtZz67"
   },
   "voter": {
-    "address": "KT1V2dQjTgmtaxm7H2JFqEYwcERd5ULQhyHn"
+    "address": "KT1RER85G1S1QJyjViSuTJMizNbtzG9z7Jes"
   },
   "feeDistributor": {
-    "address": "KT1LvtCwLnW6qTZRQLzVTZx9jRDC1FKK6guq"
+    "address": "KT1QYEm66NqeRPPrAt4XHFu9nKMQXgVFgCfS"
   },
   "bigMaps": {
-    "locks": 162778,
-    "ledger": 162777,
-    "attached": 162773,
-    "claim_ledger": 162774,
-    "amm_to_gauge_bribe": 162784,
-    "total_amm_votes": 162787,
-    "total_epoch_votes": 162788,
-    "total_token_votes": 162789,
-    "token_amm_votes": 162786,
-    "amm_epoch_fee": 162791,
-    "fee_claim_ledger": 162793,
-    "epoch_end": 162785,
-    "token_checkpoints": 162782,
-    "epoch_inflation": 162775,
-    "global_checkpoints": 162776,
-    "slope_changes": 162781
+    "locks": 190030,
+    "ledger": 190029,
+    "attached": 190025,
+    "claim_ledger": 190026,
+    "amm_to_gauge_bribe": 190035,
+    "total_amm_votes": 190038,
+    "total_epoch_votes": 190039,
+    "total_token_votes": 190040,
+    "token_amm_votes": 190037,
+    "amm_epoch_fee": 190044,
+    "fee_claim_ledger": 190046,
+    "epoch_end": 190036,
+    "token_checkpoints": 190034,
+    "epoch_inflation": 190027,
+    "global_checkpoints": 190028,
+    "slope_changes": 190033
   },
-  "EMISSION_FACTOR": 5
+  "EMISSION_FACTOR": 2
 }
