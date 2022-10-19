@@ -278,7 +278,7 @@ export default class TzktProvider {
   async getAllTokenCheckpoints(tokenId: number): Promise<AlltokenCheckpoints[]> {
     try {
       // mapid variable
-      const res = await axios.get(`${this._tzktURL}/bigmaps/190034/keys?key.nat_0="${tokenId}"&select=key,value`); 
+      const res = await axios.get(`${this._tzktURL}/bigmaps/190034/keys?key.nat_0="${tokenId}"&select=key,value`);
       if (res.data.length === 0) {
         throw "Lock does not exist";
       }
@@ -304,7 +304,7 @@ export default class TzktProvider {
     try {
       const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
         params: {
-          select: "key,value",
+          select: "key,value,active",
           key: params.address,
         },
         paramsSerializer: (params) => {
@@ -312,7 +312,7 @@ export default class TzktProvider {
         },
       });
       if (res.data.length > 0) {
-        return res.data[0].value;
+        return res.data[0].active ? res.data[0].value : "0";
       } else {
         return "0";
       }
