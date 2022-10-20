@@ -322,7 +322,12 @@ export const getToken = (type: TokenType, tokens: Token[]): string => {
   }
 };
 
-export const range = (start: number, stop: number, step = 1) =>
-  Array(Math.ceil((stop - start) / step))
+export const range = (start: number, stop: number, step = 1) => {
+  if (start > stop) {
+    return [];
+  }
+
+  return Array(Math.ceil((stop - start) / step))
     .fill(start)
     .map((x, y) => (x + y * step).toString());
+};
