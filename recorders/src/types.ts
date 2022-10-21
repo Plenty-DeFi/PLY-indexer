@@ -23,6 +23,7 @@ export interface Config {
   configUrl: string;
   networkIndexer: string;
   startingBlock: string;
+  initialIndexing: string;
 }
 
 export interface Contracts {

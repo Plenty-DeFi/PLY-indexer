@@ -53,15 +53,26 @@ export default class BribesProcessor {
     try {
       const tokenSymbol = getTokenSymbol(bribe.value.bribe.type, tokens);
       const price =
-        (await axios.get(this._config.networkIndexer + "/analytics/tokens")).data.find(
-          (token: any) => token.token === tokenSymbol
-        ).price.value || "0";
+        tokenSymbol === "PLY"
+          ? "1"
+          : (await axios.get(this._config.networkIndexer + "/analytics/tokens")).data.find(
+              (token: any) => token.token === tokenSymbol
+            ).price.value || "0";
       console.log("Inserting Bribe", amm, tokenSymbol, bribe.value.bribe.value, price);
-      await this._dbClient.insert({
+      const bribes = await this._dbClient.get({
+        select: "*",
         table: "bribes",
-        columns: "(amm, epoch, bribe_id, provider, value, price, name)",
-        values: `('${amm}', '${bribe.key.epoch}', '${bribe.key.bribe_id}', '${bribe.value.provider}', '${bribe.value.bribe.value}', '${price}', '${tokenSymbol}')`,
+        where: `amm='${amm}' AND epoch='${bribe.key.epoch}' AND bribe_id='${bribe.key.bribe_id}'`,
       });
+      if (bribes.rowCount === 0) {
+        await this._dbClient.insert({
+          table: "bribes",
+          columns: "(amm, epoch, bribe_id, provider, value, price, name)",
+          values: `('${amm}', '${bribe.key.epoch}', '${bribe.key.bribe_id}', '${bribe.value.provider}', '${bribe.value.bribe.value}', '${price}', '${tokenSymbol}')`,
+        });
+      } else {
+        console.log("Bribe already exists", amm, tokenSymbol, bribe.value.bribe.value, price);
+      }
     } catch (e) {
       console.log("Error from bribes", e);
       throw e;

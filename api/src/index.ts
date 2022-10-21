@@ -11,10 +11,14 @@ import { addRetryToAxios } from "./utils";
     const server = httpServer(dependencies).listen(config.port, () => {
       console.log(`Express server started on port: ${config.port}`);
     });
-    cron.schedule("*/10 * * * * *", async () => {
-      console.log("Calculating APR");
-
-      dependencies.getAPR();
+    let processing = false;
+    cron.schedule("*/30 * * * * *", async () => {
+      if (!processing) {
+        console.log("Calculating APR");
+        processing = true;
+        await dependencies.getAPR();
+        processing = false;
+      }
     });
     process.on("SIGTERM", () => {
       console.log("Server stopping...");

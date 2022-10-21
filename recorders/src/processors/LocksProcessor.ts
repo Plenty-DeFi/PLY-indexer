@@ -82,7 +82,7 @@ export default class LocksProcessor {
         );
         if (data.length === 0) {
           for (const lock of locks) {
-            console.log(lock);
+            //console.log(lock);
             if (lock.value !== 0) {
               await this._processLockValue(lock.tokenId, lock.owner);
             } else {
@@ -119,9 +119,9 @@ export default class LocksProcessor {
     try {
       console.log(owner, tokenId);
       const values: LockValues = await this._getLockValues(tokenId);
-      console.log(values);
+      //console.log(values);
       const attached: boolean = await this._getAttached(tokenId);
-      console.log(attached);
+      //console.log(attached);
       const epoch = await this._getEpoch(tokenId);
       const claimedEpochs: string[] = [];
       let offset = 0;
@@ -161,9 +161,9 @@ export default class LocksProcessor {
       const tokenId = lock.key.nat;
       console.log(owner, tokenId);
       const values: LockValues = await this._getLockValues(tokenId);
-      console.log(values);
+      //console.log(values);
       const attached: boolean = await this._getAttached(tokenId);
-      console.log(attached);
+      //console.log(attached);
       const epoch = await this._getEpoch(tokenId);
       const claimedEpochs: string[] = [];
       let offset = 0;
@@ -274,7 +274,7 @@ export default class LocksProcessor {
           where: `id=${lockData.tokenId} AND owner='${lockData.owner}' AND base_value='${lockData.base_value}' AND end_ts='${lockData.end}' AND attached=${lockData.attached} AND claimed_epochs='${lockData.claimedEpochs}'`,
         });
         if (existingEntry.rowCount === 0) {
-          console.log("Updating Lock ${lockData.tokenId}");
+          console.log(`Updating Lock ${lockData.tokenId}`);
           await this._dbClient.update({
             table: "locks",
             set: `owner='${lockData.owner}', base_value='${lockData.base_value}', end_ts='${lockData.end}', attached=${lockData.attached}, claimed_epochs='${lockData.claimedEpochs}'`,

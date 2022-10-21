@@ -12,6 +12,7 @@ import FeesProcessor from "./processors/FeesProcessor";
 import EpochsProcessor from "./processors/EpochsProcessor";
 import SlopesProcessor from "./processors/SlopeProcessor";
 import { addRetryToAxios } from "./utils";
+
 const dependencies = buildDependencies(config);
 
 const heartbeat = new HeartBeat(config);
@@ -29,13 +30,17 @@ const slopesProcessor = new SlopesProcessor(dependencies);
     heartbeat.start();
     addRetryToAxios();
     await dependencies.dbClient.init();
-    await locksProcesser.process();
-    await poolsProcessor.process();
-    await votesProcessor.process();
-    await feesProcessor.process();
-    //await slopesProcessor.process();
-    await epochsProcessor.process();
+    if (config.initialIndexing == "true") {
+      await locksProcesser.process();
+      await poolsProcessor.process();
+      await votesProcessor.process();
+      await feesProcessor.process();
+      //await slopesProcessor.process();
+      await epochsProcessor.process();
+    }
+
     blockListener.listen();
+
     let processing = false;
     let lastBlockProcessed = dependencies.config.startingBlock;
 
@@ -48,15 +53,15 @@ const slopesProcessor = new SlopesProcessor(dependencies);
       //console.log("block listener got a new block", b.level, b.hash);
       try {
         for (let i = parseInt(lastBlockProcessed) + 1; i <= parseInt(b.level); i++) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          console.log("Processing block", i);
-          await locksProcesser.updateLocks(b.level);
-          await poolsProcessor.updatePools(b.level);
-          await bribesProcessor.updateBribes(b.level);
-          await positionProcessor.updatePositions(b.level);
-          await votesProcessor.epochUpdates(b.level);
-          await votesProcessor.votesUpdates(b.level);
-          await feesProcessor.updateFees(b.level);
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          console.log("--------------- Processing block", i, "----------------");
+          await locksProcesser.updateLocks(i.toString());
+          await poolsProcessor.updatePools(i.toString());
+          await bribesProcessor.updateBribes(i.toString());
+          await positionProcessor.updatePositions(i.toString());
+          await votesProcessor.epochUpdates(i.toString());
+          await votesProcessor.votesUpdates(i.toString());
+          await feesProcessor.updateFees(i.toString());
           lastBlockProcessed = i.toString();
         }
         processing = false;
