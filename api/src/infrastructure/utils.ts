@@ -221,7 +221,7 @@ export const getRealEmission = async (tzktProvider: TzktProvider, contracts: Con
     .div(totalSupply)
     .div(contracts.EMISSION_FACTOR);
   const emission_real = new BigNumber(emission.base).minus(emission_offset);
-  console.log(emission_real.toString());
+  //console.log(emission_real.toString());
   return emission_real;
 };
 

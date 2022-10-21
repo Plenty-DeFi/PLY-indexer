@@ -27,7 +27,7 @@ function build({ dbClient }: Dependecies): Router {
             where: `(token_id='${lock.id}') AND (fee_claimed=${false} OR bribes_unclaimed != '{}')`,
           });
           const finalTokenVotes = tokenVotes.rows.map(async (tokenVote) => {
-            console.log(tokenVote.bribes_unclaimed);
+            //console.log(tokenVote.bribes_unclaimed);
             const ammEpochVotes = await dbClient.get({
               select: "*",
               table: "total_amm_votes",
