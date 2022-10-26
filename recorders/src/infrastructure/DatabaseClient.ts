@@ -1,6 +1,13 @@
 import { Client, QueryResult } from "pg";
 
-import { Config, DatabaseDeleteParams, DatabaseGetParams, DatabaseInsertParams, DatabaseUpdateParams } from "../types";
+import {
+  Config,
+  DatabaseDeleteParams,
+  DatabaseGetParams,
+  DatabaseInsertParams,
+  DatabaseInsertUpdateParams,
+  DatabaseUpdateParams,
+} from "../types";
 
 export default class DatabaseClient {
   private _dbClient: Client;
@@ -24,7 +31,9 @@ export default class DatabaseClient {
           owner VARCHAR(50) NOT NULL,
           base_value VARCHAR(100) NOT NULL,
           end_ts VARCHAR(100) NOT NULL,
-          attached BOOLEAN NOT NULL
+          attached BOOLEAN NOT NULL,
+          epoch VARCHAR(50) NOT NULL,
+          claimed_epochs VARCHAR(50)[] NOT NULL
         );`
       );
       await this._dbClient.query(
@@ -48,7 +57,89 @@ export default class DatabaseClient {
           gauge VARCHAR(50) NOT NULL,
           bribe VARCHAR(50) NOT NULL,
           gauge_BigMap VARCHAR(100) NOT NULL,
-          bribe_BigMap VARCHAR(100) NOT NULL
+          attach_BigMap VARCHAR(100) NOT NULL,
+          derived_BigMap VARCHAR(100) NOT NULL,
+          bribe_BigMap VARCHAR(100) NOT NULL,
+          bribe_claim_ledger VARCHAR(100) NOT NULL
+        );`
+      );
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS bribes (
+          amm VARCHAR(50) NOT NULL,
+          epoch VARCHAR(50) NOT NULL,
+          bribe_id VARCHAR(50) NOT NULL,
+          provider VARCHAR(50) NOT NULL,
+          value VARCHAR(100) NOT NULL,
+          price VARCHAR(100) NOT NULL,
+          name VARCHAR(50) NOT NULL,
+          PRIMARY KEY (epoch, amm, bribe_id)
+        );`
+      );
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS positions (
+          amm VARCHAR(50) NOT NULL,
+          user_address VARCHAR(50) NOT NULL,
+          balance VARCHAR(50) NOT NULL,
+          staked_balance VARCHAR(50) NOT NULL,
+          derived_balance VARCHAR(50) NOT NULL,
+          attach_BigMap VARCHAR(50) NOT NULL,
+          PRIMARY KEY (amm, user_address)
+        );`
+      );
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS total_amm_votes (
+          amm VARCHAR(50) NOT NULL,
+          epoch VARCHAR(50) NOT NULL,
+          value VARCHAR(100) NOT NULL,
+          PRIMARY KEY (amm, epoch)
+        );`
+      );
+
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS total_token_votes (
+          token_id VARCHAR(50) NOT NULL,
+          epoch VARCHAR(50) NOT NULL,
+          value VARCHAR(100) NOT NULL,
+          PRIMARY KEY (token_id, epoch)
+        );`
+      );
+
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS token_amm_votes (
+          amm VARCHAR(50) NOT NULL,
+          epoch VARCHAR(50) NOT NULL,
+          token_id VARCHAR(50) NOT NULL,
+          value VARCHAR(100) NOT NULL,
+          fee_claimed BOOLEAN NOT NULL,
+          bribes NUMERIC[] NOT NULL,
+          bribes_unclaimed NUMERIC[] NOT NULL,
+          PRIMARY KEY (amm, epoch, token_id)
+        );`
+      );
+
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS fees (
+          amm VARCHAR(50) NOT NULL,
+          epoch VARCHAR(50) NOT NULL,
+          token1_symbol VARCHAR(50) NOT NULL,
+          token1_fee VARCHAR(100) NOT NULL,
+          token2_symbol VARCHAR(50) NOT NULL,
+          token2_fee VARCHAR(100) NOT NULL,
+          PRIMARY KEY (amm, epoch)
+        );`
+      );
+      /*       await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS slopes (
+          ts VARCHAR(50) PRIMARY KEY,
+          slope VARCHAR(100) NOT NULL
+        );`
+      ); */
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS epochs (
+          epoch VARCHAR(50) PRIMARY KEY,
+          epoch_end_ts VARCHAR(50) NOT NULL,
+          epoch_total_vp VARCHAR(100) NOT NULL,
+          epoch_inflation VARCHAR(100) NOT NULL
         );`
       );
     } catch (err) {
@@ -70,6 +161,14 @@ export default class DatabaseClient {
   async getAll(params: DatabaseGetParams): Promise<QueryResult<any>> {
     try {
       const res = await this._dbClient.query(`SELECT ${params.select} FROM ${params.table} WHERE ${params.where};`);
+      return res;
+    } catch (err) {
+      throw err;
+    }
+  }
+  async getAllNoQuery(params: DatabaseGetParams): Promise<QueryResult<any>> {
+    try {
+      const res = await this._dbClient.query(`SELECT ${params.select} FROM ${params.table};`);
       return res;
     } catch (err) {
       throw err;

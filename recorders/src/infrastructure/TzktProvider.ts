@@ -1,7 +1,16 @@
 import qs from "qs";
 import axios from "axios";
 
-import { Config, GetBigMapUpdatesParameters, GetTransactionParameters, PoolsApiResponse, Transaction } from "../types";
+import {
+  BribeApiResponse,
+  Config,
+  GetBigMapUpdatesParameters,
+  GetTransactionParameters,
+  LqtBalancesApiResponse,
+  PoolsApiResponse,
+  TotalAmmVotes,
+  Transaction,
+} from "../types";
 
 export default class TzktProvider {
   private _tzktURL: string;
@@ -41,6 +50,59 @@ export default class TzktProvider {
           level: params.level,
           limit: params.limit,
           offset: params.offset,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getLockValues<T>(params: { bigmap: string; tokenId: string }): Promise<T> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigmap}/keys`, {
+        params: {
+          select: "key,value",
+          key: params.tokenId,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      return res.data[0];
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getLocks<T>(params: { bigMap: string; limit: number; offset: number }): Promise<T> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          limit: params.limit,
+          offset: params.offset,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getLockAttached<T>(params: { bigmap: string; tokenId: string }): Promise<T> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigmap}/keys`, {
+        params: {
+          select: "key,value,active",
+          key: params.tokenId,
         },
         paramsSerializer: (params) => {
           return qs.stringify(params, { arrayFormat: "repeat" });
@@ -93,6 +155,7 @@ export default class TzktProvider {
       const res = await axios.get(`${this._tzktURL}/bigmaps/${bigMap}/keys`, {
         params: {
           select: "key,value",
+          active: "true",
         },
         paramsSerializer: (params) => {
           return qs.stringify(params, { arrayFormat: "repeat" });
@@ -149,7 +212,11 @@ export default class TzktProvider {
     }
   }
 
-  async getGaugeBigMap<T>(gauge: string): Promise<string> {
+  async getGaugeBigMap<T>(gauge: string): Promise<{
+    gaugeBigMap: string;
+    attachBigMap: string;
+    derivedBigMap: string;
+  }> {
     try {
       const res = await axios.get(`${this._tzktURL}/contracts/${gauge}/storage`, {
         paramsSerializer: (params) => {
@@ -157,13 +224,17 @@ export default class TzktProvider {
         },
       });
 
-      return res.data.balances.toString();
+      return {
+        gaugeBigMap: res.data.balances.toString(),
+        attachBigMap: res.data.attached_tokens.toString(),
+        derivedBigMap: res.data.derived_balances.toString(),
+      };
     } catch (err) {
       throw err;
     }
   }
 
-  async getBribeBigMap<T>(bribe: string): Promise<string> {
+  async getBribeBigMap<T>(bribe: string): Promise<{ bribeBigMap: string; bribeClaimLedgerBigMap: string }> {
     try {
       const res = await axios.get(`${this._tzktURL}/contracts/${bribe}/storage`, {
         paramsSerializer: (params) => {
@@ -171,7 +242,243 @@ export default class TzktProvider {
         },
       });
 
-      return res.data.epoch_bribes.toString();
+      return {
+        bribeBigMap: res.data.epoch_bribes.toString(),
+        bribeClaimLedgerBigMap: res.data.claim_ledger.toString(),
+      };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getLqtBalances(params: { bigMap: string; limit: number; offset: number }): Promise<LqtBalancesApiResponse[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          limit: params.limit,
+          offset: params.offset,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getLockTs(params: { bigMap: string; token_id: string }): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key.nat_0"]: params.token_id,
+          ["key.nat_1"]: "1",
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data[0].value.ts.toString();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getBlock(params: { ts: string }): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/blocks/${params.ts}`);
+      return res.data.level.toString();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getEpochfromLevel<T>(voter: string, block: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${voter}/storage`, {
+        params: {
+          ["level"]: block,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data.epoch.toString();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getClaimedEpochs(params: {
+    bigMap: string;
+    token_id: string;
+    limit: number;
+    offset: number;
+  }): Promise<string[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key.token_id"]: params.token_id,
+          limit: params.limit,
+          offset: params.offset,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data.map((x: any) => x.key.epoch.toString());
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getEpochInflation(bigmap: string, epoch: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${bigmap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key"]: epoch,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      if (res.data.length === 0) {
+        return "0";
+      } else {
+        return res.data[0].value;
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getBigMap(params: { bigMap: string; limit: number; offset: number }): Promise<[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          limit: params.limit,
+          offset: params.offset,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getFeeClaimed<T>(params: { bigMap: string; epoch: string; token_id: string; amm: string }): Promise<[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key.epoch"]: params.epoch,
+          ["key.token_id"]: params.token_id,
+          ["key.amm"]: params.amm,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getBribeClaimed<T>(params: { bigMap: string; bribe_id: string; token_id: string }): Promise<[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key.token_id"]: params.token_id,
+          ["key.bribe_id"]: params.bribe_id,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getEpochTotalAmmVotes<T>(params: {
+    bigMap: string;
+    limit: number;
+    offset: number;
+    epoch: string;
+  }): Promise<[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key.epoch"]: params.epoch,
+          limit: params.limit,
+          offset: params.offset,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getStakeBalance(params: { bigMap: string; address: string }): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          key: params.address,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      if (res.data.length > 0) {
+        return res.data[0].value;
+      } else {
+        return "0";
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getBribes(params: { bigMap: string; limit: number; offset: number }): Promise<BribeApiResponse[]> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          limit: params.limit,
+          offset: params.offset,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data;
     } catch (err) {
       throw err;
     }

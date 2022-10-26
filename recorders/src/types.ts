@@ -13,6 +13,7 @@ export interface Config {
   tezGraph: string;
   tezGraphWs: string;
   tezGraphLimit: number;
+  rpc: string;
   postgres: {
     username: string;
     database: string;
@@ -20,6 +21,9 @@ export interface Config {
     host: string;
   };
   configUrl: string;
+  networkIndexer: string;
+  startingBlock: string;
+  initialIndexing: string;
 }
 
 export interface Contracts {
@@ -43,6 +47,27 @@ export interface Contracts {
     ledger: number;
     attached: number;
     amm_to_gauge_bribe: number;
+    total_amm_votes: number;
+    total_epoch_votes: number;
+    total_token_votes: number;
+    token_amm_votes: number;
+    amm_epoch_fee: number;
+    fee_claim_ledger: number;
+    epoch_end: number;
+    claim_ledger: number;
+    token_checkpoints: number;
+    global_checkpoints: number;
+    slope_changes: number;
+    epoch_inflation: number;
+  };
+}
+
+export interface Checkpoints {
+  key: string;
+  value: {
+    ts: string;
+    bias: string;
+    slope: string;
   };
 }
 
@@ -52,6 +77,8 @@ export interface Lock {
   base_value: string;
   end: string;
   attached: boolean;
+  epoch: string;
+  claimedEpochs: string;
 }
 
 export interface LocksQueryVariable {
@@ -81,7 +108,7 @@ export interface BlockData {
 export interface DatabaseGetParams {
   table: string;
   select: string;
-  where: string;
+  where?: string;
 }
 export interface DatabaseDeleteParams {
   table: string;
@@ -92,6 +119,13 @@ export interface DatabaseInsertParams {
   table: string;
   columns: string;
   values: string;
+}
+
+export interface DatabaseInsertUpdateParams {
+  table: string;
+  columns: string;
+  values: string;
+  update: string;
 }
 
 export interface PoolsApiResponse {
@@ -203,4 +237,114 @@ export interface AmmData {
   lqtSymbol: string;
   lqtBigMap: string;
   lqtDecimals: number;
+}
+
+export interface BribeApiResponse {
+  key: {
+    epoch: string;
+    bribe_id: string;
+  };
+  value: {
+    bribe: {
+      type: TokenType;
+      value: string;
+    };
+    provider: string;
+  };
+}
+
+export interface LqtBalancesApiResponse {
+  key: string;
+  value: {
+    balance: string;
+  };
+}
+
+export interface TotalAmmVotes {
+  key: {
+    amm: string;
+    epoch: string;
+  };
+  value: string;
+}
+
+export interface TotalTokenVotes {
+  key: {
+    token_id: string;
+    epoch: string;
+  };
+  value: string;
+}
+
+export interface TokenAmmVotes {
+  key: {
+    amm: string;
+    epoch: string;
+    token_id: string;
+  };
+  value: string;
+}
+export interface FeesApiResponse {
+  key: {
+    amm: string;
+    epoch: string;
+  };
+  value: FeeValue[];
+}
+
+export interface InflationClaimLedger {
+  key: {
+    token_id: string;
+    epoch: string;
+  };
+}
+
+export interface FeeValue {
+  key: TokenType;
+  value: string;
+}
+export interface BribeApiResponse {
+  key: {
+    epoch: string;
+    bribe_id: string;
+  };
+  value: {
+    bribe: {
+      type: TokenType;
+      value: string;
+    };
+    provider: string;
+  };
+}
+
+export interface TokenType {
+  fa2?: {
+    nat: string;
+    address: string;
+  };
+  fa12?: string;
+  tez?: {};
+}
+
+export interface Pool {
+  amm: string;
+  lqt_token: string;
+  token1: string;
+  token2: string;
+  token1_decimals: number;
+  token2_decimals: number;
+  token1_variant: boolean;
+  token2_variant: boolean;
+  token1_symbol: string;
+  token2_symbol: string;
+  token1_id: number | undefined;
+  token2_id: number | undefined;
+  lqt_token_bigmap: string;
+  gauge: string;
+  bribe: string;
+  gauge_bigmap: string;
+  bribe_bigmap: string;
+  attach_bigmap: string;
+  derived_bigmap: string;
+  bribe_claim_ledger: string;
 }

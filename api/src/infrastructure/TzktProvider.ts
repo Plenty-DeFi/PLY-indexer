@@ -138,7 +138,71 @@ export default class TzktProvider {
     }
   }
 
+  async getTokenVotes(bigmap: string, epoch: string, tokenId: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${bigmap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key.epoch"]: epoch,
+          ["key.token_id"]: tokenId,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      if (res.data.length === 0) {
+        return "0";
+      } else {
+        return res.data[0].value;
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getEpochVotes(bigmap: string, epoch: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${bigmap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key"]: epoch,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      if (res.data.length === 0) {
+        return "0";
+      } else {
+        return res.data[0].value;
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getEpochEnd(bigmap: string, epoch: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${bigmap}/keys`, {
+        params: {
+          select: "key,value",
+          ["key"]: epoch,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      if (res.data.length === 0) {
+        return "0";
+      } else {
+        return res.data[0].value;
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getEpochInflation(bigmap: string, epoch: string): Promise<string> {
     try {
       const res = await axios.get(`${this._tzktURL}/bigmaps/${bigmap}/keys`, {
         params: {
@@ -182,17 +246,39 @@ export default class TzktProvider {
           return qs.stringify(params, { arrayFormat: "repeat" });
         },
       });
+      return res.data.map((data: any) => {
+        return data.value.bribe;
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getCurrentGCIndex(voteEscrow: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${voteEscrow}/storage`);
+      return res.data.gc_index;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  //   Call VE Storage to get map ID
+  async getGlobalCheckpoints(): Promise<AlltokenCheckpoints[]> {
+    try {
+      // mapid variable
+      const res = await axios.get(`${this._tzktURL}/bigmaps/162776/keys`);
       return res.data;
     } catch (err) {
       throw err;
     }
   }
 
-//   Call VE Storage to get map ID
+  //   Call VE Storage to get map ID
   async getAllTokenCheckpoints(tokenId: number): Promise<AlltokenCheckpoints[]> {
     try {
       // mapid variable
-      const res = await axios.get(`${this._tzktURL}/bigmaps/160226/keys?key.nat_0="${tokenId}"&select=key,value`);
+      const res = await axios.get(`${this._tzktURL}/bigmaps/190034/keys?key.nat_0="${tokenId}"&select=key,value`);
       if (res.data.length === 0) {
         throw "Lock does not exist";
       }
@@ -205,11 +291,31 @@ export default class TzktProvider {
   async getNumTokenCheckpoints(tokenId: number): Promise<string> {
     try {
       // mapid variable
-      const res = await axios.get(`${this._tzktURL}/bigmaps/160223/keys/${tokenId}`);
+      const res = await axios.get(`${this._tzktURL}/bigmaps/190031/keys/${tokenId}`);
       if (res.status === 204) {
         throw "Lock does not exist";
       }
       return res.data.value;
+    } catch (err) {
+      throw err;
+    }
+  }
+  async getAttachToken(params: { bigMap: string; address: string }): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value,active",
+          key: params.address,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      if (res.data.length > 0) {
+        return res.data[0].active ? res.data[0].value : "0";
+      } else {
+        return "0";
+      }
     } catch (err) {
       throw err;
     }

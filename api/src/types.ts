@@ -1,4 +1,4 @@
-import { LargeNumberLike } from "crypto";
+import Cache from "./infrastructure/Cache";
 import DatabaseClient from "./infrastructure/DatabaseClient";
 import TzktProvider from "./infrastructure/TzktProvider";
 
@@ -12,14 +12,37 @@ export interface Config {
   tezGraph: string;
   tezGraphLimit: number;
   rpc: string;
+  networkIndexer: string;
   postgres: {
     username: string;
     database: string;
     password: string;
     host: string;
   };
+  ttl: {
+    data: number;
+    history: number;
+  };
+  configURL: string;
 }
 
+export interface Data {
+  tokens: Token[];
+}
+
+export interface Token {
+  address: string;
+  symbol: string;
+  variant: string;
+  tokenId: number;
+}
+
+export interface APR {
+  [key: string]: {
+    current: string;
+    future: string;
+  };
+}
 export interface Contracts {
   voteEscrow: {
     address: string;
@@ -44,17 +67,23 @@ export interface Contracts {
     amm_to_gauge_bribe: number;
     total_amm_votes: number;
     total_epoch_votes: number;
+    total_token_votes: number;
+    epoch_end: number;
+    epoch_inflation: number;
+    global_checkpoints: number;
   };
   EMISSION_FACTOR: number;
 }
 
 export interface Lock {
   owner: string;
-  tokenId: string;
-  base_value: string;
-  end: string;
+  id: string;
+  baseValue: string;
+  endTs: string;
   attached: boolean;
-  voting_power: string;
+  epochtVotingPower: string;
+  currentVotingPower: string;
+  availableVotingPower: string;
 }
 
 export interface Pool {
@@ -89,10 +118,13 @@ export interface LockValues {
 }
 
 export interface Dependecies {
+  cache: Cache;
   config: Config;
   dbClient: DatabaseClient;
   tzktProvider: TzktProvider;
   contracts: Contracts;
+  getData: () => Promise<Data>;
+  getAPR: () => Promise<APR>;
 }
 
 export interface BlockData {
@@ -174,4 +206,19 @@ export interface AlltokenCheckpoints_Value {
   ts: string;
   bias: string;
   slope: string;
+}
+
+export interface CachedValue {
+  data: any;
+  storedAt: Date | undefined;
+  ttl: number | undefined;
+}
+
+export interface TokenType {
+  fa2?: {
+    nat: string;
+    address: string;
+  };
+  fa12?: string;
+  tez?: {};
 }

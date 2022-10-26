@@ -16,5 +16,9 @@ export const config: Config = {
   },
   tezGraph: process.env.TZGRAPH_URL || "https://ghostnet.tezgraph.ecadinfra.com/graphql",
   tezGraphWs: process.env.TZGRAPH_WS || "wss://ghostnet.tezgraph.ecadinfra.com/graphql",
-  configUrl: process.env.CONFIG_URL || "https://config.plentydefi.com/v1/config",
+  configUrl: process.env.CONFIG_URL || "https://config.plenty.network/v1/config",
+  networkIndexer: process.env.NETWORK_INDEXER || "https://analytics-indexer.plenty.network",
+  rpc: process.env.RPC || "https://rpc.tzkt.io/ghostnet",
+  startingBlock: process.env.STARTING_BLOCK || "1371355",
+  initialIndexing: process.env.INITIAL_INDEXING || "true", //"true" or "false"
 };

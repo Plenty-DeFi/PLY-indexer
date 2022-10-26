@@ -29,52 +29,38 @@ export default class LocksProcessor {
 
   async process(): Promise<void> {
     try {
-      const query = gql`
-        query BigmapValuesQuery($id: BigNumber!, $limit: Int!, $after: Cursor) {
-          bigmap_keys(filter: { bigmap_id: $id }, first: $limit, after: $after) {
-            page_info {
-              has_next_page
-            }
-            edges {
-              cursor
-              node {
-                key
-                current_value {
-                  value
-                }
+      let offset = 0;
+      while (true) {
+        const locks: {
+          key: { nat: string; address: string };
+          value: string;
+        }[] = await this._tkztProvider.getLocks({
+          bigMap: this._contracts.bigMaps.ledger.toString(),
+          limit: this._config.tzktLimit,
+          offset,
+        });
+        if (locks.length === 0) {
+          break;
+        } else {
+          for (const lock of locks) {
+            if (lock.value === "1") {
+              await this._processLock(lock);
+            } else {
+              const existingEntry = await this._dbClient.get({
+                select: "*",
+                table: "locks",
+                where: `id=${lock.key.nat} AND owner='${lock.key.address}'`,
+              });
+              if (existingEntry.rowCount > 0) {
+                await this._dbClient.delete({
+                  table: "locks",
+                  where: `id=${lock.key.nat}`,
+                });
               }
             }
           }
+          offset += this._config.tzktOffset;
         }
-      `;
-      const variables: LocksQueryVariable = {
-        id: this._contracts.bigMaps.ledger.toString(),
-        limit: this._config.tezGraphLimit,
-      };
-      while (true) {
-        const data = await request(this._config.tezGraph, query, variables);
-        for (const lock of data.bigmap_keys.edges) {
-          if (lock.node.current_value.value === "1") {
-            await this._processLock(lock);
-          } else {
-            const existingEntry = await this._dbClient.get({
-              select: "*",
-              table: "locks",
-              where: `id=${lock.node.key[1]} AND owner='${lock.node.key[0]}'`,
-            });
-            if (existingEntry.rowCount > 0) {
-              await this._dbClient.delete({
-                table: "locks",
-                where: `id=${lock.node.key[1]}`,
-              });
-            }
-          }
-        }
-        if (!data.bigmap_keys.page_info.has_next_page) {
-          break;
-        }
-        let cursor = data.bigmap_keys.edges[variables.limit - 1].cursor;
-        variables.after = cursor;
       }
     } catch (err) {
       console.error("error a:", err);
@@ -96,7 +82,7 @@ export default class LocksProcessor {
         );
         if (data.length === 0) {
           for (const lock of locks) {
-            console.log(lock);
+            //console.log(lock);
             if (lock.value !== 0) {
               await this._processLockValue(lock.tokenId, lock.owner);
             } else {
@@ -133,14 +119,35 @@ export default class LocksProcessor {
     try {
       console.log(owner, tokenId);
       const values: LockValues = await this._getLockValues(tokenId);
-      console.log(values);
+      //console.log(values);
       const attached: boolean = await this._getAttached(tokenId);
-      console.log(attached);
+      //console.log(attached);
+      const epoch = await this._getEpoch(tokenId);
+      const claimedEpochs: string[] = [];
+      let offset = 0;
+      while (true) {
+        const claimed = await this._tkztProvider.getClaimedEpochs({
+          bigMap: this._contracts.bigMaps.claim_ledger.toString(),
+          token_id: tokenId,
+          limit: this._config.tzktLimit,
+          offset,
+        });
+        if (claimed.length === 0) {
+          break;
+        } else {
+          claimedEpochs.push(...claimed);
+          offset += this._config.tzktOffset;
+        }
+      }
+
+      const claimedEpochsSql = claimedEpochs.length != 0 ? `{${claimedEpochs.map((b) => b).join(",")}}` : "{}";
       const lockData = {
         ...values,
         attached,
         owner,
         tokenId,
+        epoch,
+        claimedEpochs: claimedEpochsSql,
       };
       await this._lockDbOperation(lockData);
     } catch (err) {
@@ -148,21 +155,57 @@ export default class LocksProcessor {
     }
   }
 
-  private async _processLock(lock: any): Promise<void> {
+  private async _processLock(lock: { key: { nat: string; address: string }; value: string }): Promise<void> {
     try {
-      const [owner, tokenId]: string[] = Object.values(lock.node.key);
+      const owner = lock.key.address;
+      const tokenId = lock.key.nat;
       console.log(owner, tokenId);
       const values: LockValues = await this._getLockValues(tokenId);
-      console.log(values);
+      //console.log(values);
       const attached: boolean = await this._getAttached(tokenId);
-      console.log(attached);
+      //console.log(attached);
+      const epoch = await this._getEpoch(tokenId);
+      const claimedEpochs: string[] = [];
+      let offset = 0;
+      while (true) {
+        const claimed = await this._tkztProvider.getClaimedEpochs({
+          bigMap: this._contracts.bigMaps.claim_ledger.toString(),
+          token_id: tokenId,
+          limit: this._config.tzktLimit,
+          offset,
+        });
+        if (claimed.length === 0) {
+          break;
+        } else {
+          claimedEpochs.push(...claimed);
+          offset += this._config.tzktOffset;
+        }
+      }
+      const claimedEpochsSql = claimedEpochs.length != 0 ? `{${claimedEpochs.map((b) => b).join(",")}}` : "{}";
       const lockData = {
         ...values,
         attached,
         owner,
         tokenId,
+        epoch,
+        claimedEpochs: claimedEpochsSql,
       };
       await this._lockDbOperation(lockData);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  private async _getEpoch(tokenId: string): Promise<string> {
+    try {
+      const ts = await this._tkztProvider.getLockTs({
+        bigMap: this._contracts.bigMaps.token_checkpoints.toString(),
+        token_id: tokenId,
+      });
+      const timeISO = new Date(parseInt(ts) * 1000).toISOString();
+      const block = await this._tkztProvider.getBlock({ ts: timeISO });
+      const epoch = await this._tkztProvider.getEpochfromLevel(this._contracts.voter.address, block);
+      return epoch;
     } catch (err) {
       throw err;
     }
@@ -170,56 +213,46 @@ export default class LocksProcessor {
 
   private async _getLockValues(tokenId: string): Promise<LockValues> {
     try {
-      const query = gql`
-        query BigmapValuesQuery($id: BigNumber!, $key: Micheline) {
-          bigmap_values(first: 1, filter: { bigmap_id: $id, key: $key }) {
-            edges {
-              node {
-                key
-                value
-              }
-            }
-          }
-        }
-      `;
-      const variables = {
-        key: tokenId,
-        id: this._contracts.bigMaps.locks.toString(),
-      };
-      const data = await request(this._config.tezGraph, query, variables);
-      return { base_value: data.bigmap_values.edges[0].node.value[0], end: data.bigmap_values.edges[0].node.value[1] };
+      const values: {
+        key: string;
+        value: {
+          base_value: string;
+          end: string;
+        };
+      } = await this._tkztProvider.getLockValues({
+        bigmap: this._contracts.bigMaps.locks.toString(),
+        tokenId: tokenId,
+      });
+
+      return { base_value: values.value.base_value, end: values.value.end };
     } catch (err) {
       throw err;
     }
   }
   private async _getAttached(tokenId: string): Promise<boolean> {
     try {
-      const query = gql`
-        query BigmapValuesQuery($id: BigNumber!, $key: Micheline) {
-          bigmap_values(first: 1, filter: { bigmap_id: $id, key: $key }) {
-            edges {
-              node {
-                key
-                value
-              }
-            }
-          }
-        }
-      `;
-      const variables = {
-        key: tokenId,
-        id: this._contracts.bigMaps.attached.toString(),
-      };
-      const data = await request(this._config.tezGraph, query, variables);
-      if (data.bigmap_values.edges.length === 0) {
+      const data: {
+        key: string;
+        value: {
+          base_value: string;
+          end: string;
+        };
+        active: boolean;
+      }[] = await this._tkztProvider.getLockAttached({
+        bigmap: this._contracts.bigMaps.attached.toString(),
+        tokenId: tokenId,
+      });
+
+      if (data.length === 0) {
         return false;
       } else {
-        return data.bigmap_values.edges[0].node.value !== null;
+        return data[0].active;
       }
     } catch (err) {
       throw err;
     }
   }
+
   private async _lockDbOperation(lockData: Lock): Promise<void> {
     try {
       const existingLock = await this._dbClient.get({
@@ -228,23 +261,23 @@ export default class LocksProcessor {
         where: `id = '${lockData.tokenId}'`,
       });
       if (existingLock.rowCount === 0) {
-        console.log("Inseting Lock ${lockData.tokenId}");
-        this._dbClient.insert({
+        console.log(`Inseting Lock ${lockData.tokenId}`);
+        await this._dbClient.insert({
           table: "locks",
-          columns: "(id, owner, base_value, end_ts, attached)",
-          values: `(${lockData.tokenId}, '${lockData.owner}', '${lockData.base_value}', '${lockData.end}', ${lockData.attached})`,
+          columns: "(id, owner, base_value, end_ts, attached, epoch, claimed_epochs)",
+          values: `(${lockData.tokenId}, '${lockData.owner}', '${lockData.base_value}', '${lockData.end}', ${lockData.attached}, '${lockData.epoch}', '${lockData.claimedEpochs}')`,
         });
       } else {
         const existingEntry = await this._dbClient.get({
           select: "*",
           table: "locks",
-          where: `id=${lockData.tokenId} AND owner='${lockData.owner}' AND base_value='${lockData.base_value}' AND end_ts='${lockData.end}' AND attached=${lockData.attached}`,
+          where: `id=${lockData.tokenId} AND owner='${lockData.owner}' AND base_value='${lockData.base_value}' AND end_ts='${lockData.end}' AND attached=${lockData.attached} AND claimed_epochs='${lockData.claimedEpochs}'`,
         });
         if (existingEntry.rowCount === 0) {
-          console.log("Updating Lock ${lockData.tokenId}");
-          this._dbClient.update({
+          console.log(`Updating Lock ${lockData.tokenId}`);
+          await this._dbClient.update({
             table: "locks",
-            set: `owner='${lockData.owner}', base_value='${lockData.base_value}', end_ts='${lockData.end}', attached=${lockData.attached}`,
+            set: `owner='${lockData.owner}', base_value='${lockData.base_value}', end_ts='${lockData.end}', attached=${lockData.attached}, claimed_epochs='${lockData.claimedEpochs}'`,
             where: `id=${lockData.tokenId}`,
           });
         } else {
@@ -264,10 +297,13 @@ export default class LocksProcessor {
       const locksUpdates = await this.getLockUpdates(blockLevel);
       // Check attachments
       const attachmentsUpdates = await this.getAttachmentUpdates(blockLevel);
+      // Check claimed epochs updates
+      const claimedEpochsUpdates = await this.getClaimInflationUpdates(blockLevel);
       // create a array of tokenIds, remove duplicates
-      const tokenIds = [...new Set([...ledgerUpdates, ...locksUpdates, ...attachmentsUpdates])];
+      const tokenIds = [
+        ...new Set([...ledgerUpdates, ...locksUpdates, ...attachmentsUpdates, ...claimedEpochsUpdates]),
+      ];
       // call processSepecificLocks with array of tokenIds
-
       console.log("updating tokenIds:", tokenIds);
       if (tokenIds.length > 0) {
         await this.processSpecificLocks(tokenIds);
@@ -345,6 +381,31 @@ export default class LocksProcessor {
           break;
         } else {
           tokenIdUpdates = tokenIdUpdates.concat(updates.map((update) => update.content.key.toString()));
+          offset += this._config.tzktOffset;
+        }
+      }
+      return tokenIdUpdates;
+    } catch (err) {
+      console.error("error b:", err);
+      throw err;
+    }
+  }
+  //claim infaltion
+  async getClaimInflationUpdates(level: string): Promise<string[]> {
+    try {
+      let tokenIdUpdates: string[] = [];
+      let offset = 0;
+      while (true) {
+        const updates = await this._tkztProvider.getBigMapUpdates<BigMapUpdateResponseType[]>({
+          level,
+          bigmapId: this._contracts.bigMaps.claim_ledger.toString(),
+          limit: this._config.tzktLimit,
+          offset,
+        });
+        if (updates.length === 0) {
+          break;
+        } else {
+          tokenIdUpdates = tokenIdUpdates.concat(updates.map((update) => update.content.key.token_id.toString()));
           offset += this._config.tzktOffset;
         }
       }

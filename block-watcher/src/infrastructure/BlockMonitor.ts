@@ -1,15 +1,15 @@
 import { RpcClient } from "@taquito/rpc";
-
+import axios from "axios";
 import Messenger from "./Messenger";
 import { Config } from "../types";
 
 export default class BlockMonitor {
-  private _rpcClient: RpcClient;
+  private _tzkt: string;
   private _lastBlockHash: string;
 
-  constructor({ tezosRpcURL }: Config) {
+  constructor({ tzkt }: Config) {
     this._lastBlockHash = "";
-    this._rpcClient = new RpcClient(tezosRpcURL);
+    this._tzkt = tzkt;
   }
 
   monitor(messenger: Messenger): void {
@@ -18,20 +18,20 @@ export default class BlockMonitor {
 
   private async getBlock(messenger: Messenger): Promise<void> {
     try {
-      const block = await this._rpcClient.getBlock();
+      const block = (await axios.get(`${this._tzkt}/head`)).data;
       if (block.hash === this._lastBlockHash) {
         return;
       } else {
         this._lastBlockHash = block.hash;
         console.log(
-          `Found Block ${
+          `Found Block ${block.level.toString()} ${
             block.hash
-          } at ${block.header.timestamp.toLocaleString()}`
+          } at ${block.timestamp.toLocaleString()}`
         );
         messenger.broadcast({
           hash: block.hash,
-          level: block.header.level.toString(),
-          timestamp: block.header.timestamp.toString(),
+          level: block.level.toString(),
+          timestamp: block.timestamp.toString(),
         });
       }
     } catch (err) {

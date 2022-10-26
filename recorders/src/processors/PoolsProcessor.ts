@@ -1,18 +1,37 @@
 import axios from "axios";
+import { getTokens, getTokenSymbol } from "../infrastructure/utils";
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
-import { Config, Dependecies, Contracts, PoolsApiResponse, BigMapUpdateResponseType, AmmData } from "../types";
-
+import {
+  Config,
+  Dependecies,
+  Contracts,
+  PoolsApiResponse,
+  BigMapUpdateResponseType,
+  AmmData,
+  BribeApiResponse,
+  Token,
+} from "../types";
+import BribesProcessor from "./BribesProcessor";
+import PositionsProcessor from "./PositionsProcessor";
 export default class PoolsProcessor {
   private _config: Config;
   private _dbClient: DatabaseClient;
   private _tkztProvider: TzktProvider;
   private _contracts: Contracts;
-  constructor({ config, dbClient, tzktProvider, contracts }: Dependecies) {
+  private _bribesProcessor: BribesProcessor;
+  private _positionProcessor: PositionsProcessor;
+  constructor(
+    { config, dbClient, tzktProvider, contracts }: Dependecies,
+    bribesProcessor: BribesProcessor,
+    positionProcessor: PositionsProcessor
+  ) {
     this._config = config;
     this._dbClient = dbClient;
     this._tkztProvider = tzktProvider;
     this._contracts = contracts;
+    this._bribesProcessor = bribesProcessor;
+    this._positionProcessor = positionProcessor;
   }
 
   async process(): Promise<void> {
@@ -37,19 +56,34 @@ export default class PoolsProcessor {
   }
   private async _processPool(pool: PoolsApiResponse): Promise<void> {
     try {
+      //get Token Data
+      const tokens = await getTokens(this._config);
       //get AMM data (lqtTokenAddress, token1Address and token2Address)
       const ammData = await this.getAmmData(pool.key);
       //get gaugeBigMap
-      const gaugeBigMap = await this._tkztProvider.getGaugeBigMap(pool.value.gauge);
+      const { gaugeBigMap, derivedBigMap, attachBigMap } = await this._tkztProvider.getGaugeBigMap(pool.value.gauge);
       //get bribeBigMap
-      const bribeBigMap = await this._tkztProvider.getBribeBigMap(pool.value.bribe);
+      const { bribeBigMap, bribeClaimLedgerBigMap } = await this._tkztProvider.getBribeBigMap(pool.value.bribe);
+      //process all bribes
+      await this._bribesProcessor.process(bribeBigMap, pool.key, tokens);
+      //process all position
+      await this._positionProcessor.process(pool.key, gaugeBigMap, derivedBigMap, attachBigMap, ammData.lqtBigMap);
+
       //save in db
       console.log(`Inseting Pool ${pool.key}`);
       this._dbClient.insert({
         table: "pools",
         columns:
-          "(amm, type, lqt_decimals, lqt_symbol, lqt_Token, token1, token2, token1_variant, token2_variant, token1_decimals, token2_decimals, token1_Id, token2_Id, token1_symbol, token2_symbol, lqt_Token_BigMap, gauge, bribe, gauge_BigMap, bribe_BigMap)",
-        values: `('${pool.key}', '${ammData.type}', ${ammData.lqtDecimals}, '${ammData.lqtSymbol}', '${ammData.lqtAddress}', '${ammData.token1.address}', '${ammData.token2.address}', '${ammData.token1.variant}', '${ammData.token2.variant}', '${ammData.token1.decimals}', '${ammData.token2.decimals}', ${ammData.token1.tokenId}, ${ammData.token2.tokenId}, '${ammData.token1.symbol}', '${ammData.token2.symbol}', '${ammData.lqtBigMap}', '${pool.value.gauge}', '${pool.value.bribe}', '${gaugeBigMap}', '${bribeBigMap}')`,
+          "(amm, type, lqt_decimals, lqt_symbol, lqt_Token, token1, token2, token1_variant, token2_variant, token1_decimals, token2_decimals, token1_Id, token2_Id, token1_symbol, token2_symbol, lqt_Token_BigMap, gauge, bribe, gauge_BigMap, attach_BigMap, derived_BigMap, bribe_BigMap, bribe_claim_ledger)",
+        values: `('${pool.key}', '${ammData.type}', ${ammData.lqtDecimals}, '${ammData.lqtSymbol}', '${
+          ammData.lqtAddress
+        }', '${ammData.token1.address}', '${ammData.token2.address}', '${ammData.token1.variant}', '${
+          ammData.token2.variant
+        }', '${ammData.token1.decimals}', '${ammData.token2.decimals}', ${ammData.token1.tokenId || null}, ${
+          ammData.token2.tokenId || null
+        }, '${ammData.token1.symbol}', '${ammData.token2.symbol}', '${ammData.lqtBigMap}', '${pool.value.gauge}', '${
+          pool.value.bribe
+        }', '${gaugeBigMap}', '${attachBigMap}', '${derivedBigMap}', '${bribeBigMap}', '${bribeClaimLedgerBigMap}')`,
       });
     } catch (e) {
       console.log(e);
@@ -60,6 +94,7 @@ export default class PoolsProcessor {
     try {
       const result = (
         await axios.get(this._config.configUrl + "/amm?network=testnet", {
+          //todo change to mainnnet
           headers: {
             "User-Agent":
               "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
@@ -96,7 +131,6 @@ export default class PoolsProcessor {
 
   async updatePools(level: string): Promise<void> {
     try {
-      let tokenIdUpdates: string[] = [];
       let offset = 0;
       while (true) {
         const updates = await this._tkztProvider.getBigMapUpdates<BigMapUpdateResponseType[]>({
