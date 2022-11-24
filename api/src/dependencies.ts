@@ -12,8 +12,7 @@ const getDataBuilder = (cache: Cache, config: Config) => async (): Promise<Data>
     //console.log("data", data);
     if (!data) {
       const tokens = (
-        await axios.get(config.configURL + "/token?type=standard&network=testnet", {
-          //todo change Mainnnet
+        await axios.get(config.configURL + "/tokens", {
           headers: {
             "User-Agent":
               "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",

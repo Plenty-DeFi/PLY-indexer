@@ -54,7 +54,7 @@ export default class BribesProcessor {
       const tokenSymbol = getTokenSymbol(bribe.value.bribe.type, tokens);
       const price =
         tokenSymbol === "PLY"
-          ? "1"
+          ? "1" //todo change later
           : (await axios.get(this._config.networkIndexer + "/analytics/tokens")).data.find(
               (token: any) => token.token === tokenSymbol
             ).price.value || "0";

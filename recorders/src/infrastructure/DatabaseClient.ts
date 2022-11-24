@@ -41,7 +41,6 @@ export default class DatabaseClient {
           amm VARCHAR(50) PRIMARY KEY,
           type VARCHAR(50) NOT NULL,
           lqt_decimals NUMERIC NOT NULL,
-          lqt_symbol VARCHAR(50) NOT NULL,
           lqt_Token VARCHAR(50) NOT NULL,
           token1 VARCHAR(50),
           token2 VARCHAR(50),

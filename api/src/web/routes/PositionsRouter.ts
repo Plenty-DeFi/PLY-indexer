@@ -2,7 +2,7 @@ import { Request, Response, Router } from "express";
 import { Dependecies, TokenType } from "../../types";
 import { calculateAPR, getRealEmission, getToken } from "../../infrastructure/utils";
 
-function build({ dbClient, contracts, tzktProvider, getData, getAPR }: Dependecies): Router {
+function build({ dbClient, contracts, tzktProvider, getAPR }: Dependecies): Router {
   const router = Router();
   router.get("/", async (req: Request, res: Response) => {
     try {

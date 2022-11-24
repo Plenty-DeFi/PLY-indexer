@@ -6,7 +6,7 @@ import { HttpBackend } from "@taquito/http-utils";
 
 export const getTokens = async (config: Config): Promise<Token[]> => {
   const tokens = (
-    await axios.get(config.configUrl + "/token?type=standard&network=testnet", {
+    await axios.get(config.configUrl + "/tokens", {
       // todo change to mainnnet
       headers: {
         "User-Agent":

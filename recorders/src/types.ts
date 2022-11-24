@@ -234,7 +234,6 @@ export interface AmmData {
   token2: Token;
   type: AmmType;
   lqtAddress: string;
-  lqtSymbol: string;
   lqtBigMap: string;
   lqtDecimals: number;
 }

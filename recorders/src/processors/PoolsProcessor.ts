@@ -74,14 +74,14 @@ export default class PoolsProcessor {
       this._dbClient.insert({
         table: "pools",
         columns:
-          "(amm, type, lqt_decimals, lqt_symbol, lqt_Token, token1, token2, token1_variant, token2_variant, token1_decimals, token2_decimals, token1_Id, token2_Id, token1_symbol, token2_symbol, lqt_Token_BigMap, gauge, bribe, gauge_BigMap, attach_BigMap, derived_BigMap, bribe_BigMap, bribe_claim_ledger)",
-        values: `('${pool.key}', '${ammData.type}', ${ammData.lqtDecimals}, '${ammData.lqtSymbol}', '${
-          ammData.lqtAddress
-        }', '${ammData.token1.address}', '${ammData.token2.address}', '${ammData.token1.variant}', '${
-          ammData.token2.variant
-        }', '${ammData.token1.decimals}', '${ammData.token2.decimals}', ${ammData.token1.tokenId || null}, ${
-          ammData.token2.tokenId || null
-        }, '${ammData.token1.symbol}', '${ammData.token2.symbol}', '${ammData.lqtBigMap}', '${pool.value.gauge}', '${
+          "(amm, type, lqt_decimals, lqt_Token, token1, token2, token1_variant, token2_variant, token1_decimals, token2_decimals, token1_Id, token2_Id, token1_symbol, token2_symbol, lqt_Token_BigMap, gauge, bribe, gauge_BigMap, attach_BigMap, derived_BigMap, bribe_BigMap, bribe_claim_ledger)",
+        values: `('${pool.key}', '${ammData.type}', ${ammData.lqtDecimals}, '${ammData.lqtAddress}', '${
+          ammData.token1.address
+        }', '${ammData.token2.address}', '${ammData.token1.variant}', '${ammData.token2.variant}', '${
+          ammData.token1.decimals
+        }', '${ammData.token2.decimals}', ${ammData.token1.tokenId || null}, ${ammData.token2.tokenId || null}, '${
+          ammData.token1.symbol
+        }', '${ammData.token2.symbol}', '${ammData.lqtBigMap}', '${pool.value.gauge}', '${
           pool.value.bribe
         }', '${gaugeBigMap}', '${attachBigMap}', '${derivedBigMap}', '${bribeBigMap}', '${bribeClaimLedgerBigMap}')`,
       });
@@ -93,8 +93,8 @@ export default class PoolsProcessor {
   private async getAmmData(amm: string): Promise<AmmData> {
     try {
       const result = (
-        await axios.get(this._config.configUrl + "/amm?network=testnet", {
-          //todo change to mainnnet
+        await axios.get(this._config.configUrl + "/pools", {
+          //todo reconfigure later
           headers: {
             "User-Agent":
               "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
@@ -102,26 +102,27 @@ export default class PoolsProcessor {
         })
       ).data[amm];
 
+      const lqtBigMap = await this._tkztProvider.getLqtBigMap(result.lqtTokenAddress);
+
       return {
         token1: {
           address: result.token1.address,
           symbol: result.token1.symbol,
-          variant: result.token1.variant,
-          tokenId: result.token1.tokenId,
+          variant: result.token1.standard,
+          tokenId: result.token1.tokenId ?? null,
           decimals: result.token1.decimals,
         },
         token2: {
           address: result.token2.address,
           symbol: result.token2.symbol,
-          variant: result.token2.variant,
-          tokenId: result.token2.tokenId,
+          variant: result.token2.standard,
+          tokenId: result.token2.tokenId ?? null,
           decimals: result.token2.decimals,
         },
         address: result.address,
         type: result.type,
         lqtAddress: result.lpToken.address,
-        lqtBigMap: result.lpToken.mapId,
-        lqtSymbol: result.lpToken.symbol,
+        lqtBigMap: lqtBigMap,
         lqtDecimals: result.lpToken.decimals,
       };
     } catch (err) {
