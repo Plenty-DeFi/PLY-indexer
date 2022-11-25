@@ -102,7 +102,7 @@ export default class PoolsProcessor {
         })
       ).data[amm];
 
-      const lqtBigMap = await this._tkztProvider.getLqtBigMap(result.lqtTokenAddress);
+      const lqtBigMap = await this._tkztProvider.getLqtBigMap(result.lpToken.address);
 
       return {
         token1: {
