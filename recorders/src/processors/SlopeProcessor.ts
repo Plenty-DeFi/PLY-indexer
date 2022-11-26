@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getTokens, getTokenSymbol } from "../infrastructure/utils";
+import { getTokenSymbol } from "../infrastructure/utils";
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
 import { Config, Dependecies, Contracts, BigMapUpdateResponseType } from "../types";

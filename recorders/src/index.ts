@@ -31,8 +31,8 @@ const slopesProcessor = new SlopesProcessor(dependencies);
     addRetryToAxios();
     await dependencies.dbClient.init();
     if (config.initialIndexing == "true") {
-      await locksProcesser.process();
       await poolsProcessor.process();
+      await locksProcesser.process();
       await votesProcessor.process();
       await feesProcessor.process();
       //await slopesProcessor.process();

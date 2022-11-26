@@ -19,6 +19,7 @@ export const config: Config = {
   configUrl: process.env.CONFIG_URL || "https://config.ghostnet.plenty.network",
   networkIndexer: process.env.NETWORK_INDEXER || "https://analytics-indexer.plenty.network",
   rpc: process.env.RPC || "https://rpc.tzkt.io/ghostnet",
-  startingBlock: process.env.STARTING_BLOCK || "1557161",
-  initialIndexing: process.env.INITIAL_INDEXING || "true", //"true" or "false"
+  startingBlock: process.env.STARTING_BLOCK || "1561571",
+  initialIndexing: process.env.INITIAL_INDEXING || "true", //"true" or "false",
+  cacheTtl: parseInt(process.env.CACHE_TTL) || 300000,
 };

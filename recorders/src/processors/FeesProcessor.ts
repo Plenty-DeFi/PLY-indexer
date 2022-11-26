@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getTokens, getTokenSymbol } from "../infrastructure/utils";
+import { getTokenSymbol } from "../infrastructure/utils";
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
 import {
@@ -20,15 +20,18 @@ export default class FeesProcessor {
   private _dbClient: DatabaseClient;
   private _tkztProvider: TzktProvider;
   private _contracts: Contracts;
-  constructor({ config, dbClient, tzktProvider, contracts }: Dependecies) {
+  private _getTokens: () => Promise<Token[]>;
+
+  constructor({ config, dbClient, tzktProvider, contracts, getTokens }: Dependecies) {
     this._config = config;
     this._dbClient = dbClient;
     this._tkztProvider = tzktProvider;
     this._contracts = contracts;
+    this._getTokens = getTokens;
   }
   async process() {
     try {
-      const tokens = await getTokens(this._config);
+      const tokens = await this._getTokens();
       console.log("Fees processing started");
       let offset = 0;
       while (true) {
@@ -78,7 +81,7 @@ export default class FeesProcessor {
 
   async updateFees(level: string): Promise<void> {
     try {
-      const tokens = await getTokens(this._config);
+      const tokens = await this._getTokens();
       let offset = 0;
       while (true) {
         const updates = await this._tkztProvider.getBigMapUpdates<BigMapUpdateResponseType[]>({

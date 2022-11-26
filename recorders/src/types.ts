@@ -24,6 +24,7 @@ export interface Config {
   networkIndexer: string;
   startingBlock: string;
   initialIndexing: string;
+  cacheTtl: number;
 }
 
 export interface Contracts {
@@ -98,6 +99,8 @@ export interface Dependecies {
   dbClient: DatabaseClient;
   tzktProvider: TzktProvider;
   contracts: Contracts;
+  getPools?: () => Promise<any>;
+  getTokens?: () => Promise<Token[]>;
 }
 
 export interface BlockData {
@@ -217,6 +220,10 @@ export interface Token {
   variant: TokenVariant;
   tokenId: number | undefined;
   decimals: number;
+  price?: {
+    value: string;
+    change24H: string;
+  };
 }
 
 export interface Tokens {
@@ -346,4 +353,10 @@ export interface Pool {
   attach_bigmap: string;
   derived_bigmap: string;
   bribe_claim_ledger: string;
+}
+
+export interface CachedValue {
+  data: any;
+  storedAt: Date | undefined;
+  ttl: number | undefined;
 }

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getTokens, getTokenSymbol } from "../infrastructure/utils";
+import { getTokenSymbol } from "../infrastructure/utils";
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
 import {
@@ -19,11 +19,13 @@ export default class BribesProcessor {
   private _dbClient: DatabaseClient;
   private _tkztProvider: TzktProvider;
   private _contracts: Contracts;
-  constructor({ config, dbClient, tzktProvider, contracts }: Dependecies) {
+  private _getTokens: () => Promise<Token[]>;
+  constructor({ config, dbClient, tzktProvider, contracts, getTokens }: Dependecies) {
     this._config = config;
     this._dbClient = dbClient;
     this._tkztProvider = tzktProvider;
     this._contracts = contracts;
+    this._getTokens = getTokens;
   }
   async process(bribeBigMap: string, amm: string, tokens: Token[]) {
     try {
@@ -52,12 +54,18 @@ export default class BribesProcessor {
   private async _processBribe(bribe: BribeApiResponse, amm: string, tokens: Token[]) {
     try {
       const tokenSymbol = getTokenSymbol(bribe.value.bribe.type, tokens);
+      const token = (await this._getTokens()).find((token: any) => token.token === tokenSymbol);
       const price =
         tokenSymbol === "PLY"
           ? "1" //todo change later
-          : (await axios.get(this._config.networkIndexer + "/analytics/tokens")).data.find(
-              (token: any) => token.token === tokenSymbol
-            ).price.value || "0";
+          : token
+          ? token.price.value
+          : "0";
+
+      if (!token) {
+        console.log("Not find in analytics ", tokenSymbol);
+      }
+
       console.log("Inserting Bribe", amm, tokenSymbol, bribe.value.bribe.value, price);
       const bribes = await this._dbClient.get({
         select: "*",
@@ -87,7 +95,7 @@ export default class BribesProcessor {
           table: "pools",
         })
       ).rows;
-      const tokens = await getTokens(this._config);
+      const tokens = await this._getTokens();
       pools.forEach(async (pool) => {
         let offset = 0;
         while (true) {

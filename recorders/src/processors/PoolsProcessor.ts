@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getTokens, getTokenSymbol } from "../infrastructure/utils";
+import { getTokenSymbol } from "../infrastructure/utils";
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
 import {
@@ -14,6 +14,7 @@ import {
 } from "../types";
 import BribesProcessor from "./BribesProcessor";
 import PositionsProcessor from "./PositionsProcessor";
+
 export default class PoolsProcessor {
   private _config: Config;
   private _dbClient: DatabaseClient;
@@ -21,8 +22,10 @@ export default class PoolsProcessor {
   private _contracts: Contracts;
   private _bribesProcessor: BribesProcessor;
   private _positionProcessor: PositionsProcessor;
+  private _getPools: () => Promise<any>;
+  private _getTokens: () => Promise<Token[]>;
   constructor(
-    { config, dbClient, tzktProvider, contracts }: Dependecies,
+    { config, dbClient, tzktProvider, contracts, getPools, getTokens }: Dependecies,
     bribesProcessor: BribesProcessor,
     positionProcessor: PositionsProcessor
   ) {
@@ -32,6 +35,8 @@ export default class PoolsProcessor {
     this._contracts = contracts;
     this._bribesProcessor = bribesProcessor;
     this._positionProcessor = positionProcessor;
+    this._getPools = getPools;
+    this._getTokens = getTokens;
   }
 
   async process(): Promise<void> {
@@ -57,7 +62,7 @@ export default class PoolsProcessor {
   private async _processPool(pool: PoolsApiResponse): Promise<void> {
     try {
       //get Token Data
-      const tokens = await getTokens(this._config);
+      const tokens = await this._getTokens();
       //get AMM data (lqtTokenAddress, token1Address and token2Address)
       const ammData = await this.getAmmData(pool.key);
       //get gaugeBigMap
@@ -92,15 +97,7 @@ export default class PoolsProcessor {
 
   private async getAmmData(amm: string): Promise<AmmData> {
     try {
-      const result = (
-        await axios.get(this._config.configUrl + "/pools", {
-          //todo reconfigure later
-          headers: {
-            "User-Agent":
-              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36",
-          },
-        })
-      ).data[amm];
+      const result = (await this._getPools())[amm];
 
       const lqtBigMap = await this._tkztProvider.getLqtBigMap(result.lpToken.address);
 
