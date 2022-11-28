@@ -22,5 +22,5 @@ export const config: Config = {
     history: parseInt(process.env.HISTORY_TTL) || 0,
   },
   configURL: process.env.CONFIG_URL || "https://config.ghostnet.plenty.network",
-  networkIndexer: process.env.NETWORK_INDEXER || "https://analytics-indexer.plenty.network",
+  networkIndexer: process.env.NETWORK_INDEXER || "https://analytics-indexer.ghostnet.plenty.network",
 };
