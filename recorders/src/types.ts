@@ -101,6 +101,7 @@ export interface Dependecies {
   contracts: Contracts;
   getPools?: () => Promise<any>;
   getTokens?: () => Promise<Token[]>;
+  getTokenPrice?: () => Promise<any>;
 }
 
 export interface BlockData {

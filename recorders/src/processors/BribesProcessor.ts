@@ -13,18 +13,21 @@ import {
   Token,
   Pool,
 } from "../types";
+import { getTokens } from "dependencies";
 
 export default class BribesProcessor {
   private _config: Config;
   private _dbClient: DatabaseClient;
   private _tkztProvider: TzktProvider;
   private _contracts: Contracts;
+  private _getTokenPrice: () => Promise<any>;
   private _getTokens: () => Promise<Token[]>;
-  constructor({ config, dbClient, tzktProvider, contracts, getTokens }: Dependecies) {
+  constructor({ config, dbClient, tzktProvider, contracts, getTokenPrice, getTokens }: Dependecies) {
     this._config = config;
     this._dbClient = dbClient;
     this._tkztProvider = tzktProvider;
     this._contracts = contracts;
+    this._getTokenPrice = getTokenPrice;
     this._getTokens = getTokens;
   }
   async process(bribeBigMap: string, amm: string, tokens: Token[]) {
@@ -54,7 +57,7 @@ export default class BribesProcessor {
   private async _processBribe(bribe: BribeApiResponse, amm: string, tokens: Token[]) {
     try {
       const tokenSymbol = getTokenSymbol(bribe.value.bribe.type, tokens);
-      const token = (await this._getTokens()).find((token: any) => token.token === tokenSymbol);
+      const token = (await this._getTokenPrice()).find((token1: any) => token1.token === tokenSymbol);
       const price =
         tokenSymbol === "PLY"
           ? "1" //todo change later
