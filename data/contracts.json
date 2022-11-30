@@ -30,7 +30,10 @@
     "token_checkpoints": 190034,
     "epoch_inflation": 190027,
     "global_checkpoints": 190028,
-    "slope_changes": 190033
+    "slope_changes": 190033,
+
+    "num_tokens_checkpoint": 190031,
+    "all_tokens_checkpoint": 190034
   },
   "EMISSION_FACTOR": 2
 }

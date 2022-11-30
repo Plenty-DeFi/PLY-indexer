@@ -47,7 +47,10 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
         if (epoch && timestamp) {
           const locksAll = await asyncFilter(locks.rows, async (data: any) => {
             const TzktObj = new TzktProvider(config);
-            const all_token_checkpoints = await TzktObj.getAllTokenCheckpoints(parseInt(data.id));
+            const all_token_checkpoints = await TzktObj.getAllTokenCheckpoints(
+              parseInt(data.id),
+              contracts.bigMaps.all_tokens_checkpoint
+            );
             const map1 = new Map();
             //console.log(all_token_checkpoints);
             for (var x in all_token_checkpoints) {

@@ -71,6 +71,8 @@ export interface Contracts {
     epoch_end: number;
     epoch_inflation: number;
     global_checkpoints: number;
+    num_tokens_checkpoint: number;
+    all_tokens_checkpoint: number;
   };
   EMISSION_FACTOR: number;
 }

@@ -3,6 +3,7 @@ import { Dependecies, Lock } from "../../types";
 import { range, votingPower, votingPowerFast } from "../../infrastructure/utils";
 import BigNumber from "bignumber.js";
 import { TezosToolkit } from "@taquito/taquito";
+import { config } from "process";
 
 function build({ dbClient, tzktProvider, contracts }: Dependecies): Router {
   const router = Router();
@@ -26,12 +27,15 @@ function build({ dbClient, tzktProvider, contracts }: Dependecies): Router {
           const currentEpoch = await tzktProvider.getCurrentEpoch(contracts.voter.address);
           const validArr: string[] = range(parseInt(lock.epoch) + 1, parseInt(currentEpoch));
           const unclaimedEpochs = validArr.filter((el) => !lock.claimed_epochs.includes(el));
-          const alltokenCheckpoints = await tzktProvider.getAllTokenCheckpoints(lock.id);
+          const alltokenCheckpoints = await tzktProvider.getAllTokenCheckpoints(
+            lock.id,
+            contracts.bigMaps.all_tokens_checkpoint
+          );
           const map1 = new Map();
           for (var x in alltokenCheckpoints) {
             map1.set(alltokenCheckpoints[x].key.nat_1, alltokenCheckpoints[x].value);
           }
-          const sec = await tzktProvider.getNumTokenCheckpoints(lock.id);
+          const sec = await tzktProvider.getNumTokenCheckpoints(lock.id, contracts.bigMaps.num_tokens_checkpoint);
           const result = unclaimedEpochs.map(async (epoch) => {
             const epochData = await dbClient.get({
               select: "*",
