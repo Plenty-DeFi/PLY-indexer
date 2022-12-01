@@ -5,7 +5,7 @@ import { AlltokenCheckpoints, Contracts, Pool, Token, TokenType } from "../types
 import axios from "axios";
 const TzktObj = new TzktProvider(config);
 
-export const votingPower = async (tokenId: number, ts2: number, time: number) => {
+export const votingPower = async (tokenId: number, ts2: number, time: number, allTokenCheckpoints: number, numTokensCheckpoint: number) => {
   try {
     let factor: number = 7 * 86400; // todo change later to 7 * 86400
     if (time === 0) {
@@ -15,7 +15,7 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
     ts2 = Math.floor(ts2 / factor) * factor;
     const ts = new BigNumber(ts2);
 
-    const all_token_checkpoints = await TzktObj.getAllTokenCheckpoints(tokenId);
+    const all_token_checkpoints = await TzktObj.getAllTokenCheckpoints(tokenId, allTokenCheckpoints);
 
     const map1 = new Map();
     for (var x in all_token_checkpoints) {
@@ -25,7 +25,7 @@ export const votingPower = async (tokenId: number, ts2: number, time: number) =>
       throw "0";
     }
 
-    const sec = await TzktObj.getNumTokenCheckpoints(tokenId);
+    const sec = await TzktObj.getNumTokenCheckpoints(tokenId, numTokensCheckpoint);
     const last_checkpoint = map1.get(sec);
 
     if (ts >= last_checkpoint.ts) {

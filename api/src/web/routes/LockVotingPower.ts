@@ -17,7 +17,7 @@ function build({ dbClient, config, contracts }: Dependecies): Router {
           where: `id=${token_id}`,
         });
         if (lock.rowCount !== 0) {
-          const lockVotingPower = await votingPower(lock.rows[0].id, parseInt(at), 1);
+          const lockVotingPower = await votingPower(lock.rows[0].id, parseInt(at), 1, contracts.bigMaps.all_tokens_checkpoint, contracts.bigMaps.num_tokens_checkpoint);
           return res.json({ lockVotingPower });
         } else {
           return res.status(400).json({ message: "TOKEN_ID_NOT_EXIST" });
