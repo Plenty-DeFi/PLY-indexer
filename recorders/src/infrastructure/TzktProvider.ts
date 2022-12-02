@@ -206,7 +206,7 @@ export default class TzktProvider {
         },
       });
 
-      return res.data.balances.toString();
+      return res.data.balances ? res.data.balances.toString() : res.data.ledger.toString();
     } catch (err) {
       throw err;
     }
