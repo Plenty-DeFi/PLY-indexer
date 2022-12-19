@@ -140,6 +140,14 @@ export interface DatabaseGetParams {
   where?: string;
 }
 
+export interface DatabaseGetPaginationParams {
+  table: string;
+  select: string;
+  where?: string;
+  limit?: number;
+  offset?: number;
+}
+
 export interface DatabaseInsertParams {
   table: string;
   columns: string;

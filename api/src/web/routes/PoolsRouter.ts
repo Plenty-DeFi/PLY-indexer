@@ -8,6 +8,12 @@ function build({ dbClient, contracts, tzktProvider, getAPR }: Dependecies): Rout
     try {
       const APRs = await getAPR();
       const amm = req.query.amm as string;
+      const page = req.query.page as string;
+      const limit = 10; // number of rows to return per page
+      const offset = (parseInt(page) - 1) * limit; // number of rows to skip
+      if (!page) {
+        return res.status(400).json({ message: "PAGE_NOT_EXIST" });
+      }
       if (amm) {
         const pools = await dbClient.get({
           select: "*",
@@ -33,9 +39,11 @@ function build({ dbClient, contracts, tzktProvider, getAPR }: Dependecies): Rout
         }
       } else {
         let pools = [];
-        const pool = await dbClient.getAllNoQuery({
+        const pool = await dbClient.getPagination({
           select: "*",
           table: "pools",
+          limit: limit,
+          offset: offset,
         });
         if (pool.rowCount !== 0) {
           const currentEpoch = await tzktProvider.getCurrentEpoch(contracts.voter.address);

@@ -1,6 +1,12 @@
 import { Client, QueryResult } from "pg";
 
-import { Config, DatabaseGetParams, DatabaseInsertParams, DatabaseUpdateParams } from "../types";
+import {
+  Config,
+  DatabaseGetPaginationParams,
+  DatabaseGetParams,
+  DatabaseInsertParams,
+  DatabaseUpdateParams,
+} from "../types";
 
 export default class DatabaseClient {
   private _dbClient: Client;
@@ -46,6 +52,17 @@ export default class DatabaseClient {
   async getAllNoQuery(params: DatabaseGetParams): Promise<QueryResult<any>> {
     try {
       const res = await this._dbClient.query(`SELECT ${params.select} FROM ${params.table};`);
+      return res;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getPagination(params: DatabaseGetPaginationParams): Promise<QueryResult<any>> {
+    try {
+      const res = await this._dbClient.query(
+        `SELECT ${params.select} FROM ${params.table} LIMIT ${params.limit} OFFSET ${params.offset};`
+      );
       return res;
     } catch (err) {
       throw err;
