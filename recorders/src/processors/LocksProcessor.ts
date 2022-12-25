@@ -42,7 +42,7 @@ export default class LocksProcessor {
         if (locks.length === 0) {
           break;
         } else {
-          locks.forEach(async (lock) => {
+          for (const lock of locks) {
             if (lock.value === "1") {
               await this._processLock(lock);
             } else {
@@ -58,7 +58,8 @@ export default class LocksProcessor {
                 });
               }
             }
-          });
+          }
+
           offset += this._config.tzktOffset;
         }
       }

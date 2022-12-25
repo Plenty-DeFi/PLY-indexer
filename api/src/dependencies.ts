@@ -87,7 +87,7 @@ const getAPR =
         for (const pool of pools) {
           const token1Price = await getPrices(cache, config, pool.token1_symbol);
           const token2Price = await getPrices(cache, config, pool.token2_symbol);
-          const plyPrice = "1"; //todo change later
+          const plyPrice = await getPrices(cache, config, "PLY");
           const futureApr = await calculateFutureAPR(
             contracts,
             tzktProvider,
