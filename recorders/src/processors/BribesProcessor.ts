@@ -58,12 +58,7 @@ export default class BribesProcessor {
     try {
       const tokenSymbol = getTokenSymbol(bribe.value.bribe.type, tokens);
       const token = (await this._getTokenPrice()).find((token1: any) => token1.token === tokenSymbol);
-      const price =
-        tokenSymbol === "PLY"
-          ? "1" //todo change later
-          : token
-          ? token.price.value
-          : "0";
+      const price = token ? token.price.value : "0";
 
       if (!token) {
         console.log("Not find in analytics ", tokenSymbol);

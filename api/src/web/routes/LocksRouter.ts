@@ -79,9 +79,27 @@ function build({ dbClient, config, contracts, tzktProvider }: Dependecies): Rout
           //const contract = await tezos.contract.at(contracts.voteEscrow.address);
           const date = timestamp ? parseInt(timestamp) : Math.round(new Date().getTime() / 1000);
           const next_date = date + 7 * 86400; //todo change later to 7*86400;
-          const epochtVotingPower = await votingPower(lock.id, date, 1, contracts.bigMaps.all_tokens_checkpoint, contracts.bigMaps.num_tokens_checkpoint);
-          const nextVotingPower = await votingPower(lock.id, next_date, 1, contracts.bigMaps.all_tokens_checkpoint, contracts.bigMaps.num_tokens_checkpoint);
-          const currentVotingPower = await votingPower(lock.id, date, 0, contracts.bigMaps.all_tokens_checkpoint, contracts.bigMaps.num_tokens_checkpoint);
+          const epochtVotingPower = await votingPower(
+            lock.id,
+            date,
+            1,
+            contracts.bigMaps.all_tokens_checkpoint,
+            contracts.bigMaps.num_tokens_checkpoint
+          );
+          const nextVotingPower = await votingPower(
+            lock.id,
+            next_date,
+            1,
+            contracts.bigMaps.all_tokens_checkpoint,
+            contracts.bigMaps.num_tokens_checkpoint
+          );
+          const currentVotingPower = await votingPower(
+            lock.id,
+            date,
+            0,
+            contracts.bigMaps.all_tokens_checkpoint,
+            contracts.bigMaps.num_tokens_checkpoint
+          );
           const currentEpoch = epoch ? epoch : await tzktProvider.getCurrentEpoch(contracts.voter.address);
           const usedVotingPower = await tzktProvider.getTokenVotes(
             contracts.bigMaps.total_token_votes.toString(),

@@ -2,7 +2,7 @@ import { Config } from "./types";
 
 export const config: Config = {
   heartbeatURL: process.env.HEARTBEAT || "https://cronitor.link/p/f2b147ded5de476180d0eac01c1502f6/EADGAa",
-  tzktURL: process.env.TZKT_URL || "https://api.ghostnet.tzkt.io/v1",
+  tzktURL: process.env.TZKT_URL || "https://api.tzkt.plenty.network/v1",
   port: process.env.PORTS || "6024",
   tzktLimit: 1000,
   tezGraphLimit: 10,
@@ -16,10 +16,10 @@ export const config: Config = {
   },
   tezGraph: process.env.TZGRAPH_URL || "https://ghostnet.tezgraph.ecadinfra.com/graphql",
   tezGraphWs: process.env.TZGRAPH_WS || "wss://ghostnet.tezgraph.ecadinfra.com/graphql",
-  configUrl: process.env.CONFIG_URL || "https://config.ghostnet.plenty.network",
-  networkIndexer: process.env.NETWORK_INDEXER || "https://analytics-indexer.ghostnet.plenty.network",
-  rpc: process.env.RPC || "https://rpc.tzkt.io/ghostnet",
-  startingBlock: process.env.STARTING_BLOCK || "1596800",
+  configUrl: process.env.CONFIG_URL || "https://config.mainnet.plenty.network",
+  networkIndexer: process.env.NETWORK_INDEXER || "https://api.analytics.plenty.network",
+  rpc: process.env.RPC || "https://tezosrpc.midl.dev/ak-8zzygk8qh8iyb2",
+  startingBlock: process.env.STARTING_BLOCK || "3033287",
   initialIndexing: process.env.INITIAL_INDEXING || "true", //"true" or "false",
   cacheTtl: parseInt(process.env.CACHE_TTL) || 300000,
 };
