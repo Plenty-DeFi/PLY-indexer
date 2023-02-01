@@ -1,4 +1,4 @@
-# Plenty Indexer
+# PLY Indexer
 
 A microservices based indexer to provide data to plenty network. 
 
