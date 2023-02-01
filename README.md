@@ -1,6 +1,6 @@
-# Plenty Analytics Indexer
+# Plenty Indexer
 
-A microservices based indexer to provide analytics across Plenty's AMM. 
+A microservices based indexer to provide data to plenty network. 
 
 ## Steps to run
 
