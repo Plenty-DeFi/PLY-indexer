@@ -60,17 +60,21 @@ export default class PositionsProcessor {
     amm: string,
     gaugeBigMap: string,
     derivedBigMap: string,
-    attachBigMap: string
+    attachBigMap: string,
+    derivedBal?: string
   ) {
     try {
       const stakedBalance = await this._tkztProvider.getStakeBalance({
         bigMap: gaugeBigMap,
         address: userAddress,
       });
-      const derivedBalance = await this._tkztProvider.getStakeBalance({
-        bigMap: derivedBigMap,
-        address: userAddress,
-      });
+      const derivedBalance =
+        typeof derivedBal !== "undefined"
+          ? await this._tkztProvider.getStakeBalance({
+              bigMap: derivedBigMap,
+              address: userAddress,
+            })
+          : derivedBal;
 
       const existingPos = await this._dbClient.get({
         select: "*",
@@ -119,13 +123,42 @@ export default class PositionsProcessor {
         })
       ).rows;
       pools.forEach(async (pool) => {
-        let offset = 0;
+        let offset1 = 0;
+        let offset2 = 0;
+        while (true) {
+          const updates = await this._tkztProvider.getBigMapUpdates<BigMapUpdateResponseType[]>({
+            level,
+            bigmapId: pool.derived_bigmap.toString(),
+            limit: this._config.tzktLimit,
+            offset: offset1,
+          });
+          if (updates.length === 0) {
+            break;
+          } else {
+            for (const update of updates) {
+              const balance = await this._tkztProvider.getStakeBalance({
+                bigMap: pool.lqt_token_bigmap,
+                address: update.content.key,
+              });
+              await this._processPosition(
+                update.content.key,
+                balance,
+                pool.amm,
+                pool.gauge_bigmap,
+                pool.derived_bigmap,
+                pool.attach_bigmap,
+                update.content.value
+              );
+            }
+            offset1 += this._config.tzktOffset;
+          }
+        }
         while (true) {
           const updates = await this._tkztProvider.getBigMapUpdates<BigMapUpdateResponseType[]>({
             level,
             bigmapId: pool.lqt_token_bigmap.toString(),
             limit: this._config.tzktLimit,
-            offset,
+            offset: offset2,
           });
           if (updates.length === 0) {
             break;
@@ -140,7 +173,7 @@ export default class PositionsProcessor {
                 pool.attach_bigmap
               );
             }
-            offset += this._config.tzktOffset;
+            offset2 += this._config.tzktOffset;
           }
         }
       });

@@ -22,7 +22,7 @@ export const getPools = (cache: Cache, config: Config) => async () => {
       ).data;
 
       data = pools;
-      cache.insert("pools", data, config.cacheTtl);
+      cache.insert("pools", data, 60000);
     }
     return data;
   } catch (err) {
