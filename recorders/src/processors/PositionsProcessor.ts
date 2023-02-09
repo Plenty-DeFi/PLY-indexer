@@ -69,7 +69,7 @@ export default class PositionsProcessor {
         address: userAddress,
       });
       const derivedBalance =
-        typeof derivedBal !== "undefined"
+        typeof derivedBal == "undefined"
           ? await this._tkztProvider.getStakeBalance({
               bigMap: derivedBigMap,
               address: userAddress,
