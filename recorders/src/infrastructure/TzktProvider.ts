@@ -465,6 +465,27 @@ export default class TzktProvider {
     }
   }
 
+  async getLqtBalance(params: { bigMap: string; address: string }): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
+        params: {
+          select: "key,value",
+          key: params.address,
+        },
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+      if (res.data.length > 0) {
+        return res.data[0].value.balance;
+      } else {
+        return "0";
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getBribes(params: { bigMap: string; limit: number; offset: number }): Promise<BribeApiResponse[]> {
     try {
       const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {

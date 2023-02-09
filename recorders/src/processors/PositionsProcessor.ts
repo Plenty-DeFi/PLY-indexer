@@ -136,7 +136,7 @@ export default class PositionsProcessor {
             break;
           } else {
             for (const update of updates) {
-              const balance = await this._tkztProvider.getStakeBalance({
+              const balance = await this._tkztProvider.getLqtBalance({
                 bigMap: pool.lqt_token_bigmap,
                 address: update.content.key,
               });
