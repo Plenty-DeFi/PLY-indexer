@@ -10,6 +10,7 @@ import {
   PoolsApiResponse,
   TotalAmmVotes,
   Transaction,
+  V3PositionsResponse,
 } from "../types";
 
 export default class TzktProvider {
@@ -251,7 +252,11 @@ export default class TzktProvider {
     }
   }
 
-  async getLqtBalances(params: { bigMap: string; limit: number; offset: number }): Promise<LqtBalancesApiResponse[]> {
+  async getLqtBalances(params: {
+    bigMap: string;
+    limit: number;
+    offset: number;
+  }): Promise<LqtBalancesApiResponse[] | V3PositionsResponse[]> {
     try {
       const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
         params: {

@@ -267,6 +267,20 @@ export interface LqtBalancesApiResponse {
   };
 }
 
+export interface V3PositionsResponse {
+  key: string;
+  value: {
+    owner: string;
+    liquidity: string;
+    lower_tick_index: string;
+    upper_tick_index: string;
+    fee_growth_inside_last: {
+      x: string;
+      y: string;
+    };
+  };
+}
+
 export interface TotalAmmVotes {
   key: {
     amm: string;

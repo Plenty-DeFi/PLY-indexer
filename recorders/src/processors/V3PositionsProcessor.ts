@@ -12,10 +12,10 @@ import {
   BribeApiResponse,
   Token,
   Pool,
-  LqtBalancesApiResponse,
+  V3PositionsResponse,
 } from "../types";
 
-export default class PositionsProcessor {
+export default class V3PositionsProcessor {
   private _config: Config;
   private _dbClient: DatabaseClient;
   private _tkztProvider: TzktProvider;
@@ -24,27 +24,29 @@ export default class PositionsProcessor {
     this._dbClient = dbClient;
     this._tkztProvider = tzktProvider;
   }
-  async process(amm: string, gaugeBigMap: string, derivedBigMap: string, attachBigMap: string, lqtBigMap: string) {
+  async process(amm: string, positionsBigMap: string) {
     try {
-      console.log("Positions processing started for", amm, gaugeBigMap, lqtBigMap);
+      console.log("V3 Positions processing started for", amm, positionsBigMap);
       let offset = 0;
       while (true) {
-        const lqtBalances = (await this._tkztProvider.getLqtBalances({
-          bigMap: lqtBigMap,
+        const positions: V3PositionsResponse[] = (await this._tkztProvider.getLqtBalances({
+          bigMap: positionsBigMap,
           limit: this._config.tzktLimit,
           offset,
-        })) as LqtBalancesApiResponse[];
-        if (lqtBalances.length === 0) {
+        })) as V3PositionsResponse[];
+        if (positions.length === 0) {
           break;
         } else {
-          lqtBalances.forEach(async (balance) => {
+          positions.forEach(async (position) => {
             await this._processPosition(
-              balance.key,
-              balance.value.balance,
+              position.key,
+              position.value.owner,
               amm,
-              gaugeBigMap,
-              derivedBigMap,
-              attachBigMap
+              position.value.upper_tick_index,
+              position.value.lower_tick_index,
+              position.value.liquidity,
+              position.value.fee_growth_inside_last.x,
+              position.value.fee_growth_inside_last.y
             );
           });
           offset += this._config.tzktOffset;
@@ -56,58 +58,36 @@ export default class PositionsProcessor {
   }
 
   private async _processPosition(
-    userAddress: string,
-    balance: string,
+    keyId: string,
+    owner: string,
     amm: string,
-    gaugeBigMap: string,
-    derivedBigMap: string,
-    attachBigMap: string,
-    derivedBal?: string
+    upperTickIndex: string,
+    lowerTickIndex: string,
+    liquidity: string,
+    feeGrowthInsideLastX: string,
+    feeGrowthInsideLastY: string
   ) {
     try {
-      const stakedBalance = await this._tkztProvider.getStakeBalance({
-        bigMap: gaugeBigMap,
-        address: userAddress,
-      });
-      const derivedBalance =
-        typeof derivedBal == "undefined"
-          ? await this._tkztProvider.getStakeBalance({
-              bigMap: derivedBigMap,
-              address: userAddress,
-            })
-          : derivedBal;
-
       const existingPos = await this._dbClient.get({
         select: "*",
-        table: "positions",
-        where: `amm = '${amm}' AND user_address = '${userAddress}'`,
+        table: "v3_positions",
+        where: `key_id = '${keyId}'`,
       });
       if (existingPos.rowCount === 0) {
-        if (stakedBalance === "0" && balance === "0") {
-          console.log("Skipping Position", amm, userAddress, balance, stakedBalance, derivedBalance);
-        } else {
-          console.log("Inserting Position", amm, userAddress, balance, stakedBalance, derivedBalance);
-          this._dbClient.insert({
-            table: "positions",
-            columns: "(amm, user_address, balance, staked_balance, derived_balance, attach_BigMap)",
-            values: `('${amm}', '${userAddress}', '${balance}', '${stakedBalance}', '${derivedBalance}', '${attachBigMap}')`,
-          });
-        }
+        console.log("Inserting V3 Position", amm, owner);
+        this._dbClient.insert({
+          table: "v3_positions",
+          columns:
+            "(key_id, amm, owner, upper_tick_index, lower_tick_index, liquidity, fee_growth_inside_last_x, fee_growth_inside_last_y)",
+          values: `('${keyId}', '${amm}', '${owner}', '${upperTickIndex}', '${lowerTickIndex}', '${liquidity}', '${feeGrowthInsideLastX}', '${feeGrowthInsideLastY}')`,
+        });
       } else {
-        if (stakedBalance === "0" && balance === "0") {
-          console.log("Deleting Positions", amm, userAddress);
-          this._dbClient.delete({
-            table: "positions",
-            where: `amm = '${amm}' AND user_address = '${userAddress}'`,
-          });
-        } else {
-          console.log("Updating Positions", amm, userAddress, balance, stakedBalance, derivedBalance);
-          this._dbClient.update({
-            table: "positions",
-            set: `balance='${balance}', staked_balance='${stakedBalance}', derived_balance='${derivedBalance}'`,
-            where: `amm = '${amm}' AND user_address = '${userAddress}'`,
-          });
-        }
+        console.log("Updating V3 Positions", amm, owner);
+        this._dbClient.update({
+          table: "v3_positions",
+          set: `owner='${owner}', upper_tick_index='${upperTickIndex}', lower_tick_index='${lowerTickIndex}', liquidity='${liquidity}', fee_growth_inside_last_x='${feeGrowthInsideLastX}', fee_growth_inside_last_y='${feeGrowthInsideLastY}'`,
+          where: `key_id = '${keyId}'`,
+        });
       }
     } catch (e) {
       console.log("Error from positions b-", e);
@@ -115,7 +95,7 @@ export default class PositionsProcessor {
     }
   }
 
-  async updatePositions(level: string): Promise<void> {
+  /*   async updatePositions(level: string): Promise<void> {
     try {
       const pools: Pool[] = (
         await this._dbClient.getAllNoQuery({
@@ -182,5 +162,5 @@ export default class PositionsProcessor {
       console.error("error updating position:", err);
       throw err;
     }
-  }
+  } */
 }
