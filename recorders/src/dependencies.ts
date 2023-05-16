@@ -12,7 +12,7 @@ export const getPools = (cache: Cache, config: Config) => async () => {
     //console.log("data", data);
     if (!data) {
       const pools = (
-        await axios.get(config.configUrl + "/pools", {
+        await axios.get(config.configUrl + "/pools/v2", {
           //todo reconfigure later
           headers: {
             "User-Agent":

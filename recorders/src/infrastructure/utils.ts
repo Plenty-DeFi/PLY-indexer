@@ -1,8 +1,9 @@
 import axios from "axios";
-import { Config, Token, TokenType } from "../types";
+import { Config, Token, TokenType, V3Pools } from "../types";
 import { TezosToolkit } from "@taquito/taquito";
 import { RpcClient } from "@taquito/rpc";
 import { HttpBackend } from "@taquito/http-utils";
+import qs from "qs";
 
 export const getTokenSymbol = (type: TokenType, tokens: Token[]): string => {
   if (type.hasOwnProperty("fa2")) {
@@ -110,4 +111,17 @@ export const asyncFilter = async (arr: any[], predicate: any) => {
   const results = await Promise.all(arr.map(predicate));
 
   return arr.filter((_v, index) => results[index]);
+};
+
+export const getV3Pools: (config: string) => Promise<V3Pools> = async (config: string) => {
+  try {
+    const res = await axios.get(`${config}/pools/v3`, {
+      paramsSerializer: (params) => {
+        return qs.stringify(params, { arrayFormat: "repeat" });
+      },
+    });
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
 };

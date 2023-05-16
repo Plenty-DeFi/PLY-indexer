@@ -369,9 +369,46 @@ export interface Pool {
   derived_bigmap: string;
   bribe_claim_ledger: string;
 }
+export interface V3PoolDB {
+  amm: string;
+  fee_bps: string;
+  token1: string;
+  token2: string;
+  token1_decimals: number;
+  token2_decimals: number;
+  token1_variant: boolean;
+  token2_variant: boolean;
+  token1_symbol: string;
+  token2_symbol: string;
+  token1_id: number | undefined;
+  token2_id: number | undefined;
+  positions_bigmap: string;
+}
 
 export interface CachedValue {
   data: any;
   storedAt: Date | undefined;
   ttl: number | undefined;
+}
+
+export interface TokenPool {
+  name: string;
+  symbol: string;
+  decimals: string;
+  standard: string;
+  address: string;
+  tokenId: string | undefined;
+  thumbnailUri: string;
+  originChain: string;
+}
+export interface V3Pool {
+  address: string;
+  tokenX: TokenPool;
+  tokenY: TokenPool;
+  feeBps: string;
+  gauge: any;
+  bribe: any;
+}
+export interface V3Pools {
+  [address: string]: V3Pool;
 }

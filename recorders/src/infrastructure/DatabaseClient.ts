@@ -62,6 +62,52 @@ export default class DatabaseClient {
           bribe_claim_ledger VARCHAR(100) NOT NULL
         );`
       );
+
+      await this._dbClient.query(
+        `CREATE TABLE IF NOT EXISTS v3_pools (
+          amm VARCHAR(50) PRIMARY KEY,
+          fee_bps VARCHAR(50) NOT NULL,
+          token1 VARCHAR(50),
+          token2 VARCHAR(50),
+          token1_variant VARCHAR(50) NOT NULL,
+          token2_variant VARCHAR(50) NOT NULL,
+          token1_decimals NUMERIC NOT NULL,
+          token2_decimals NUMERIC NOT NULL,
+          token1_symbol VARCHAR(50) NOT NULL,
+          token2_symbol VARCHAR(50) NOT NULL,
+          token1_Id NUMERIC,
+          token2_Id NUMERIC,
+          positions_BigMap VARCHAR(100) NOT NULL
+        );`
+      );
+      /*       {
+        "KT1M5yHd85ikngHm5YCu9gkfM2oqtbsKak8Y": {
+        "address": "KT1M5yHd85ikngHm5YCu9gkfM2oqtbsKak8Y",
+        "tokenX": {
+        "name": "Ethereum DAI",
+        "symbol": "DAI.e",
+        "decimals": "18",
+        "standard": "FA2",
+        "address": "KT1Uw1oio434UoWFuZTNKFgt5wTM9tfuf7m7",
+        "tokenId": "5",
+        "thumbnailUri": "ipfs://bafybeicqbt2gepdljrjpcsaypkyjhbmuvra6jkpcwmmw6qgtwfu7dcdezy",
+        "originChain": "ETHEREUM"
+        },
+        "tokenY": {
+        "name": "Ethereum USDC",
+        "symbol": "USDC.e",
+        "decimals": "6",
+        "standard": "FA2",
+        "address": "KT1Uw1oio434UoWFuZTNKFgt5wTM9tfuf7m7",
+        "tokenId": "2",
+        "thumbnailUri": "ipfs://bafybeic4zn6dqvbzfdsnlr7hbmddpl65i6hfmt6b2dppjxy3tako3vmovy",
+        "originChain": "ETHEREUM"
+        },
+        "feeBps": "5",
+        "gauge": null,
+        "bribe": null
+        }
+        } */
       await this._dbClient.query(
         `CREATE TABLE IF NOT EXISTS bribes (
           amm VARCHAR(50) NOT NULL,

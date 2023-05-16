@@ -213,6 +213,20 @@ export default class TzktProvider {
     }
   }
 
+  async getPositionsBigMap<T>(v3Pool: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${v3Pool}/storage`, {
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data.positions.toString();
+    } catch (err) {
+      throw err;
+    }
+  }
+
   async getGaugeBigMap<T>(gauge: string): Promise<{
     gaugeBigMap: string;
     attachBigMap: string;

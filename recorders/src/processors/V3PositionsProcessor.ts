@@ -2,18 +2,7 @@ import axios from "axios";
 import { getTokenSymbol } from "../infrastructure/utils";
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
-import {
-  Config,
-  Dependecies,
-  Contracts,
-  PoolsApiResponse,
-  BigMapUpdateResponseType,
-  AmmData,
-  BribeApiResponse,
-  Token,
-  Pool,
-  V3PositionsResponse,
-} from "../types";
+import { Config, Dependecies, V3PositionsResponse, V3PoolDB, BigMapUpdateResponseType } from "../types";
 
 export default class V3PositionsProcessor {
   private _config: Config;
@@ -53,7 +42,7 @@ export default class V3PositionsProcessor {
         }
       }
     } catch (e) {
-      console.log("Error from positions a-", e);
+      console.log("Error from v3 positions a: ", e);
     }
   }
 
@@ -90,77 +79,60 @@ export default class V3PositionsProcessor {
         });
       }
     } catch (e) {
-      console.log("Error from positions b-", e);
+      console.log("Error from v3 positions b: ", e);
       throw e;
     }
   }
 
-  /*   async updatePositions(level: string): Promise<void> {
+  async updatePositions(level: string): Promise<void> {
     try {
-      const pools: Pool[] = (
+      const pools: V3PoolDB[] = (
         await this._dbClient.getAllNoQuery({
           select: "*",
-          table: "pools",
+          table: "v3_pools",
         })
       ).rows;
       pools.forEach(async (pool) => {
-        let offset1 = 0;
-        let offset2 = 0;
+        let offset = 0;
+        //console.log("Updating V3 Positions", JSON.stringify(pool));
         while (true) {
           const updates = await this._tkztProvider.getBigMapUpdates<BigMapUpdateResponseType[]>({
             level,
-            bigmapId: pool.derived_bigmap.toString(),
+            bigmapId: pool.positions_bigmap.toString(),
             limit: this._config.tzktLimit,
-            offset: offset1,
+            offset: offset,
           });
           if (updates.length === 0) {
             break;
           } else {
             for (const update of updates) {
-              const balance = await this._tkztProvider.getLqtBalance({
-                bigMap: pool.lqt_token_bigmap,
-                address: update.content.key,
-              });
+              if (update.action == "remove_key" || update.action == "remove") {
+                this._dbClient.delete({
+                  table: "v3_positions",
+                  where: `key_id = '${update.content.key}'`,
+                });
+
+                break;
+              }
+              const position = update.content as V3PositionsResponse;
               await this._processPosition(
-                update.content.key,
-                balance,
+                position.key,
+                position.value.owner,
                 pool.amm,
-                pool.gauge_bigmap,
-                pool.derived_bigmap,
-                pool.attach_bigmap,
-                update.content.value
+                position.value.upper_tick_index,
+                position.value.lower_tick_index,
+                position.value.liquidity,
+                position.value.fee_growth_inside_last.x,
+                position.value.fee_growth_inside_last.y
               );
             }
-            offset1 += this._config.tzktOffset;
-          }
-        }
-        while (true) {
-          const updates = await this._tkztProvider.getBigMapUpdates<BigMapUpdateResponseType[]>({
-            level,
-            bigmapId: pool.lqt_token_bigmap.toString(),
-            limit: this._config.tzktLimit,
-            offset: offset2,
-          });
-          if (updates.length === 0) {
-            break;
-          } else {
-            for (const update of updates) {
-              await this._processPosition(
-                update.content.key,
-                update.content.value.balance,
-                pool.amm,
-                pool.gauge_bigmap,
-                pool.derived_bigmap,
-                pool.attach_bigmap
-              );
-            }
-            offset2 += this._config.tzktOffset;
+            offset += this._config.tzktOffset;
           }
         }
       });
     } catch (err) {
-      console.error("error updating position:", err);
+      console.error("error updating v3 position:", err);
       throw err;
     }
-  } */
+  }
 }
