@@ -4,6 +4,7 @@ import LockVotingPowerRouter from "./LockVotingPower";
 import PoolsRouter from "./PoolsRouter";
 import BribesRouter from "./BribesRouter";
 import PositionsRouter from "./PositionsRouter";
+import V3PositionsRouter from "./V3PositionsRouter";
 import VotesRouter from "./VotesRouter";
 import InflationRouter from "./InflationRouter";
 import BribesProviderRouter from "./BribesProviderRouter";
@@ -16,6 +17,7 @@ function build(dependencies: Dependecies): Router {
   router.use("/pools", PoolsRouter(dependencies));
   router.use("/bribes", BribesRouter(dependencies));
   router.use("/positions", PositionsRouter(dependencies));
+  router.use("/v3-positions", V3PositionsRouter(dependencies));
   router.use("/votes", VotesRouter(dependencies));
   router.use("/inflation", InflationRouter(dependencies));
   router.use("/bribes-provider", BribesProviderRouter(dependencies));
