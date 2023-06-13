@@ -6,11 +6,12 @@ function build({ dbClient }: Dependecies): Router {
   router.get("/", async (req: Request, res: Response) => {
     try {
       const address = req.query.address as string;
+      const pool = req.query.pool as string;
       if (address) {
         const positions = await dbClient.getAll({
           select: "*",
           table: "v3_positions",
-          where: `owner='${address}'`,
+          where: `owner='${address}' AND amm='${pool}'`,
         });
         if (positions.rowCount !== 0) {
           return res.json(positions.rows);
