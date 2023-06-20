@@ -7,11 +7,22 @@ function build({ dbClient }: Dependecies): Router {
     try {
       const address = req.query.address as string;
       const pool = req.query.pool as string;
-      if (address) {
+      if (address && pool) {
         const positions = await dbClient.getAll({
           select: "*",
           table: "v3_positions",
           where: `owner='${address}' AND amm='${pool}'`,
+        });
+        if (positions.rowCount !== 0) {
+          return res.json(positions.rows);
+        } else {
+          return res.json([]);
+        }
+      } else if (address && !pool) {
+        const positions = await dbClient.getAll({
+          select: "*",
+          table: "v3_positions",
+          where: `owner='${address}'`,
         });
         if (positions.rowCount !== 0) {
           return res.json(positions.rows);
