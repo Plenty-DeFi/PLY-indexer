@@ -133,14 +133,15 @@ export default class DatabaseClient {
       );
       await this._dbClient.query(
         `CREATE TABLE IF NOT EXISTS v3_positions (
-          key_id NUMERIC PRIMARY KEY,
+          key_id NUMERIC,
           amm VARCHAR(50) NOT NULL,
           owner VARCHAR(50) NOT NULL,
           upper_tick_index VARCHAR(50) NOT NULL,
           lower_tick_index VARCHAR(50) NOT NULL,
           liquidity VARCHAR(50) NOT NULL,
           fee_growth_inside_last_x VARCHAR(50) NOT NULL,
-          fee_growth_inside_last_y VARCHAR(50) NOT NULL
+          fee_growth_inside_last_y VARCHAR(50) NOT NULL,
+          PRIMARY KEY (key_id, amm)
         );`
       );
       await this._dbClient.query(

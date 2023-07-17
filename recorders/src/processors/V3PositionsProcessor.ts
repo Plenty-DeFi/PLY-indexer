@@ -60,7 +60,7 @@ export default class V3PositionsProcessor {
       const existingPos = await this._dbClient.get({
         select: "*",
         table: "v3_positions",
-        where: `key_id = '${keyId}'`,
+        where: `key_id = '${keyId}' AND amm = '${amm}'`,
       });
       if (existingPos.rowCount === 0) {
         console.log("Inserting V3 Position", amm, owner);
@@ -75,7 +75,7 @@ export default class V3PositionsProcessor {
         this._dbClient.update({
           table: "v3_positions",
           set: `owner='${owner}', upper_tick_index='${upperTickIndex}', lower_tick_index='${lowerTickIndex}', liquidity='${liquidity}', fee_growth_inside_last_x='${feeGrowthInsideLastX}', fee_growth_inside_last_y='${feeGrowthInsideLastY}'`,
-          where: `key_id = '${keyId}'`,
+          where: `key_id = '${keyId}' AND amm = '${amm}'`,
         });
       }
     } catch (e) {
@@ -109,7 +109,7 @@ export default class V3PositionsProcessor {
               if (update.action == "remove_key" || update.action == "remove") {
                 this._dbClient.delete({
                   table: "v3_positions",
-                  where: `key_id = '${update.content.key}'`,
+                  where: `key_id = '${update.content.key}' AND amm = '${pool.amm}'`,
                 });
 
                 break;
