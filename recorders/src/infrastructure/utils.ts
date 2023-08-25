@@ -139,12 +139,12 @@ export const getV3Pools: (dbClient: DatabaseClient) => Promise<{ [key: string]: 
   dbClient: DatabaseClient
 ) => {
   try {
-    const _entries = await dbClient.get({
+    const _entries = await dbClient.getAllNoQuery({
       table: "pool_v3",
       select: "*",
     });
 
-    const tokenEntries = await dbClient.get({
+    const tokenEntries = await dbClient.getAllNoQuery({
       table: "token",
       select: "*",
     });
@@ -163,6 +163,7 @@ export const getV3Pools: (dbClient: DatabaseClient) => Promise<{ [key: string]: 
         bribe: entry.bribe,
       };
     }
+
     return pools;
   } catch (err) {
     throw err;
