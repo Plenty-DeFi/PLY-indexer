@@ -1,9 +1,11 @@
 import axios from "axios";
-import { Config, Token, TokenType, V3Pools } from "../types";
+import { Config, PoolV3, Token, Token2, TokenType, V3Pools } from "../types";
 import { TezosToolkit } from "@taquito/taquito";
 import { RpcClient } from "@taquito/rpc";
 import { HttpBackend } from "@taquito/http-utils";
 import qs from "qs";
+import DatabaseClient from "./DatabaseClient";
+import { QueryResult } from "pg";
 
 export const getTokenSymbol = (type: TokenType, tokens: Token[]): string => {
   if (type.hasOwnProperty("fa2")) {
@@ -113,14 +115,55 @@ export const asyncFilter = async (arr: any[], predicate: any) => {
   return arr.filter((_v, index) => results[index]);
 };
 
-export const getV3Pools: (config: string) => Promise<V3Pools> = async (config: string) => {
+export const entriesToTokens = (entries: QueryResult, indexBy: string) => {
+  const tokens: { [key: string]: Token2 } = {};
+
+  for (const entry of entries.rows) {
+    tokens[entry[indexBy]] = {
+      id: parseInt(entry.id),
+      name: entry.name,
+      symbol: entry.symbol,
+      decimals: parseInt(entry.decimals),
+      standard: entry.standard,
+      address: entry.address,
+      tokenId: entry.token_id ? parseInt(entry.token_id) : undefined,
+      thumbnailUri: entry.thumbnail_uri,
+      originChain: entry.origin_chain,
+    };
+  }
+
+  return tokens;
+};
+
+export const getV3Pools: (dbClient: DatabaseClient) => Promise<{ [key: string]: PoolV3 }> = async (
+  dbClient: DatabaseClient
+) => {
   try {
-    const res = await axios.get(`${config}/pools/v3`, {
-      paramsSerializer: (params) => {
-        return qs.stringify(params, { arrayFormat: "repeat" });
-      },
+    const _entries = await dbClient.get({
+      table: "pool_v3",
+      select: "*",
     });
-    return res.data;
+
+    const tokenEntries = await dbClient.get({
+      table: "token",
+      select: "*",
+    });
+
+    const tokens = entriesToTokens(tokenEntries, "id");
+
+    const pools: { [key: string]: PoolV3 } = {};
+
+    for (const entry of _entries.rows) {
+      pools[entry.address] = {
+        address: entry.address,
+        tokenX: tokens[entry.token_x],
+        tokenY: tokens[entry.token_y],
+        feeBps: entry.fee_bps,
+        gauge: entry.gauge,
+        bribe: entry.bribe,
+      };
+    }
+    return pools;
   } catch (err) {
     throw err;
   }

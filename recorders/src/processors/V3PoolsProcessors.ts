@@ -1,6 +1,6 @@
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
-import { Config, Dependecies, V3Pool } from "../types";
+import { Config, Dependecies, PoolV3, V3Pool } from "../types";
 
 import V3PositionsProcessor from "./V3PositionsProcessor";
 import { getV3Pools } from "../infrastructure/utils";
@@ -23,7 +23,7 @@ export default class V3PoolsProcessor {
 
   async process(): Promise<void> {
     try {
-      const pools = await getV3Pools(this._config.configUrl);
+      const pools = await getV3Pools(this._dbClient);
       for (const key in pools) {
         if (Object.prototype.hasOwnProperty.call(pools, key)) {
           const pool = pools[key];
@@ -41,7 +41,7 @@ export default class V3PoolsProcessor {
       console.log(e);
     }
   }
-  private async _processPool(pool: V3Pool): Promise<void> {
+  private async _processPool(pool: PoolV3): Promise<void> {
     try {
       //get Positions BigMap
       const positions_BigMap = await this._tkztProvider.getPositionsBigMap(pool.address);

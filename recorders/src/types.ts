@@ -227,6 +227,32 @@ export interface Token {
   };
 }
 
+export enum TokenStandard {
+  FA12 = "FA1.2",
+  FA2 = "FA2",
+  TEZ = "TEZ",
+}
+
+export interface PoolV3 {
+  address: string;
+  tokenX: Token2;
+  tokenY: Token2;
+  feeBps: number;
+  gauge: string;
+  bribe: string;
+}
+export interface Token2 {
+  id: number;
+  name: string;
+  symbol: string;
+  decimals: number;
+  standard: TokenStandard;
+  address?: string;
+  tokenId?: number;
+  thumbnailUri?: string;
+  originChain: string;
+}
+
 export interface Tokens {
   [key: string]: Token;
 }

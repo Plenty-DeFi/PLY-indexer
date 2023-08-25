@@ -12,11 +12,10 @@ export const config: Config = {
     username: process.env.POSTGRES_USER || "master",
     database: process.env.POSTGRES_DB || "plenty",
     password: process.env.POSTGRES_PASSWORD || "123456",
-    host: process.env.POSTGRES_HOST || "localhost",
+    host: process.env.POSTGRES_HOST || "database.plenty.network",
   },
   tezGraph: process.env.TZGRAPH_URL || "https://ghostnet.tezgraph.ecadinfra.com/graphql",
   rpc: process.env.RPC || "https://tezosrpc.midl.dev/ak-8zzygk8qh8iyb2",
-
   ttl: {
     data: parseInt(process.env.DATA_TTL) || 300000,
     history: parseInt(process.env.HISTORY_TTL) || 0,
