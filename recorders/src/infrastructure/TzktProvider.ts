@@ -213,7 +213,10 @@ export default class TzktProvider {
     }
   }
 
-  async getPositionsBigMap<T>(v3Pool: string): Promise<string> {
+  async getV3BigMapIds<T>(v3Pool: string): Promise<{
+    ledger: string;
+    positions: string;
+  }> {
     try {
       const res = await axios.get(`${this._tzktURL}/contracts/${v3Pool}/storage`, {
         paramsSerializer: (params) => {
@@ -221,7 +224,24 @@ export default class TzktProvider {
         },
       });
 
-      return res.data.positions.toString();
+      return {
+        positions: res.data.positions.toString(),
+        ledger: res.data.ledger.toString(),
+      };
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getLedgerBigMap<T>(v3Pool: string): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/contracts/${v3Pool}/storage`, {
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data.ledger.toString();
     } catch (err) {
       throw err;
     }
@@ -519,6 +539,20 @@ export default class TzktProvider {
       });
 
       return res.data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async getOwner(params: { bigMap: string; key: string }): Promise<string> {
+    try {
+      const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys/${params.key}`, {
+        paramsSerializer: (params) => {
+          return qs.stringify(params, { arrayFormat: "repeat" });
+        },
+      });
+
+      return res.data.value;
     } catch (err) {
       throw err;
     }

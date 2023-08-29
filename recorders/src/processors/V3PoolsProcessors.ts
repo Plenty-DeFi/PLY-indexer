@@ -44,8 +44,9 @@ export default class V3PoolsProcessor {
   private async _processPool(pool: PoolV3): Promise<void> {
     try {
       //get Positions BigMap
-      const positions_BigMap = await this._tkztProvider.getPositionsBigMap(pool.address);
+      const positions_BigMap = await this._tkztProvider.getV3BigMapIds(pool.address);
       //process all position
+
       await this._positionProcessor.process(pool.address, positions_BigMap);
 
       //save in db
@@ -53,14 +54,14 @@ export default class V3PoolsProcessor {
       this._dbClient.insert({
         table: "v3_pools",
         columns:
-          "(amm, fee_bps, token1, token2, token1_variant, token2_variant, token1_decimals, token2_decimals, token1_symbol, token2_symbol, token1_Id, token2_Id, positions_BigMap)",
+          "(amm, fee_bps, token1, token2, token1_variant, token2_variant, token1_decimals, token2_decimals, token1_symbol, token2_symbol, token1_Id, token2_Id, positions_BigMap, ledger_BigMap)",
         values: `('${pool.address}', '${pool.feeBps}', '${pool.tokenX.address}', '${pool.tokenY.address}', '${
           pool.tokenX.standard
         }', '${pool.tokenY.standard}', '${pool.tokenX.decimals}', '${pool.tokenY.decimals}', '${
           pool.tokenX.symbol
-        }', '${pool.tokenY.symbol}', ${pool.tokenX.tokenId || null}, ${
-          pool.tokenY.tokenId || null
-        }, '${positions_BigMap}')`,
+        }', '${pool.tokenY.symbol}', ${pool.tokenX.tokenId || null}, ${pool.tokenY.tokenId || null}, '${
+          positions_BigMap.positions
+        }', '${positions_BigMap.ledger}')`,
       });
     } catch (e) {
       console.log(e);

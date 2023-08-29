@@ -13,13 +13,13 @@ export default class V3PositionsProcessor {
     this._dbClient = dbClient;
     this._tkztProvider = tzktProvider;
   }
-  async process(amm: string, positionsBigMap: string) {
+  async process(amm: string, bigMaps: { ledger: string; positions: string }) {
     try {
-      console.log("V3 Positions processing started for", amm, positionsBigMap);
+      console.log("V3 Positions processing started for", amm, bigMaps);
       let offset = 0;
       while (true) {
         const positions: V3PositionsResponse[] = (await this._tkztProvider.getLqtBalances({
-          bigMap: positionsBigMap,
+          bigMap: bigMaps.positions,
           limit: this._config.tzktLimit,
           offset,
         })) as V3PositionsResponse[];
@@ -27,9 +27,13 @@ export default class V3PositionsProcessor {
           break;
         } else {
           positions.forEach(async (position) => {
+            const owner = await this._tkztProvider.getOwner({
+              bigMap: bigMaps.ledger,
+              key: position.key,
+            });
             await this._processPosition(
               position.key,
-              position.value.owner,
+              owner,
               amm,
               position.value.upper_tick_index,
               position.value.lower_tick_index,
@@ -115,9 +119,13 @@ export default class V3PositionsProcessor {
                 break;
               }
               const position = update.content as V3PositionsResponse;
+              const owner = await this._tkztProvider.getOwner({
+                bigMap: pool.ledger_bigmap,
+                key: position.key,
+              });
               await this._processPosition(
                 position.key,
-                position.value.owner,
+                owner,
                 pool.amm,
                 position.value.upper_tick_index,
                 position.value.lower_tick_index,

@@ -409,6 +409,7 @@ export interface V3PoolDB {
   token1_id: number | undefined;
   token2_id: number | undefined;
   positions_bigmap: string;
+  ledger_bigmap: string;
 }
 
 export interface CachedValue {

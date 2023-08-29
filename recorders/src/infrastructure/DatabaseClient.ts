@@ -77,7 +77,8 @@ export default class DatabaseClient {
           token2_symbol VARCHAR(50) NOT NULL,
           token1_Id NUMERIC,
           token2_Id NUMERIC,
-          positions_BigMap VARCHAR(100) NOT NULL
+          positions_BigMap VARCHAR(100) NOT NULL,
+          ledger_BigMap VARCHAR(100) NOT NULL
         );`
       );
       /*       {
