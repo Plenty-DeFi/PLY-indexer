@@ -12,12 +12,12 @@ export const getPools = (cache: Cache, dbClient: DatabaseClient) => async () => 
     let data = cache.get("pools");
     //console.log("data", data);
     if (!data) {
-      const _entries = await dbClient.getAll({
+      const _entries = await dbClient.getAllNoQuery({
         table: "pool_v2",
         select: "*",
       });
 
-      const tokenEntries = await dbClient.getAll({
+      const tokenEntries = await dbClient.getAllNoQuery({
         table: "token",
         select: "*",
       });
@@ -58,7 +58,7 @@ export const getTokens = (cache: Cache, config: Config, dbClient: DatabaseClient
     let data = cache.get("tokens");
     //console.log("data", data);
     if (!data) {
-      const entries = await dbClient.getAll({
+      const entries = await dbClient.getAllNoQuery({
         table: "token",
         select: "*",
       });

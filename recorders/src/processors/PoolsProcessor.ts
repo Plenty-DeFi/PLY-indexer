@@ -51,6 +51,7 @@ export default class PoolsProcessor {
           table: "pools",
           where: `amm='${pool.key}'`,
         });
+
         if (existingEntry.rowCount === 0) {
           await this._processPool(pool);
         }
