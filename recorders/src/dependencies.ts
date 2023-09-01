@@ -5,7 +5,7 @@ import TzktProvider from "./infrastructure/TzktProvider";
 import DatabaseClient from "./infrastructure/DatabaseClient";
 import Cache from "./infrastructure/Cache";
 import axios from "axios";
-import { entriesToTokens } from "infrastructure/utils";
+import { entriesToTokens } from "./infrastructure/utils";
 
 export const getPools = (cache: Cache, dbClient: DatabaseClient) => async () => {
   try {
