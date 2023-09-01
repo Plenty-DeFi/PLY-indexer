@@ -10,7 +10,7 @@ export interface Config {
   tzktLimit: number;
   tzktOffset: number;
   sharedDirectory: string;
-
+  rpc: string;
   postgres: {
     username: string;
     database: string;

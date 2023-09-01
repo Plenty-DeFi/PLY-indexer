@@ -15,6 +15,7 @@ export const config: Config = {
     host: process.env.POSTGRES_HOST || "localhost",
   },
 
+  rpc: process.env.RPC || "https://tezosrpc.midl.dev/ak-8zzygk8qh8iyb2",
   startingBlock: process.env.STARTING_BLOCK || "2674306",
   initialIndexing: process.env.INITIAL_INDEXING || "true", //"true" or "false",
   cacheTtl: parseInt(process.env.CACHE_TTL) || 300000,
