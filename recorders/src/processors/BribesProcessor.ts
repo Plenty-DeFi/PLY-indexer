@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getTokenSymbol } from "../infrastructure/utils";
+import { getPriceAt, getTokenSymbol } from "../infrastructure/utils";
 import DatabaseClient from "../infrastructure/DatabaseClient";
 import TzktProvider from "../infrastructure/TzktProvider";
 import {
@@ -20,14 +20,14 @@ export default class BribesProcessor {
   private _dbClient: DatabaseClient;
   private _tkztProvider: TzktProvider;
   private _contracts: Contracts;
-  private _getTokenPrice: () => Promise<any>;
+
   private _getTokens: () => Promise<Token[]>;
-  constructor({ config, dbClient, tzktProvider, contracts, getTokenPrice, getTokens }: Dependecies) {
+  constructor({ config, dbClient, tzktProvider, contracts, getTokens }: Dependecies) {
     this._config = config;
     this._dbClient = dbClient;
     this._tkztProvider = tzktProvider;
     this._contracts = contracts;
-    this._getTokenPrice = getTokenPrice;
+
     this._getTokens = getTokens;
   }
   async process(bribeBigMap: string, amm: string, tokens: Token[]) {
@@ -57,12 +57,8 @@ export default class BribesProcessor {
   private async _processBribe(bribe: BribeApiResponse, amm: string, tokens: Token[]) {
     try {
       const tokenSymbol = getTokenSymbol(bribe.value.bribe.type, tokens);
-      const token = (await this._getTokenPrice()).find((token1: any) => token1.token === tokenSymbol);
-      const price = token ? token.price.value : "0";
-
-      if (!token) {
-        console.log("Not find in analytics ", tokenSymbol);
-      }
+      const ts = Math.round(Date.now() / 1000);
+      const price = await getPriceAt(this._dbClient, ts, tokenSymbol);
 
       console.log("Inserting Bribe", amm, tokenSymbol, bribe.value.bribe.value, price);
       const bribes = await this._dbClient.get({

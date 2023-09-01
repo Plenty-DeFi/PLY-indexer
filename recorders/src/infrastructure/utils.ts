@@ -135,6 +135,40 @@ export const entriesToTokens = (entries: QueryResult, indexBy: string) => {
   return tokens;
 };
 
+export const getPriceAt = async (dbClient: DatabaseClient, ts: number, tokenSymbol: string): Promise<string> => {
+  if (tokenSymbol === "USDt" || tokenSymbol === "USDC.e") {
+    return "1";
+  } else {
+    try {
+      const token = await dbClient.get({
+        table: "token",
+        select: "*",
+        where: `symbol='${tokenSymbol}'`,
+      });
+      if (token.rowCount === 0) {
+        throw "TOKEN_NOT_FOUND";
+      }
+
+      const _entry = await dbClient.get({
+        table: "price_spot",
+        select: "value",
+        where: `
+          token=${token.rows[0].id}
+           AND
+          ts=(SELECT MAX(ts) FROM price_spot WHERE token=${token.rows[0].id} AND ts<=${ts})  
+        `,
+      });
+      if (_entry.rowCount === 0) {
+        return "0";
+      } else {
+        return _entry.rows[0].value;
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+};
+
 export const getV3Pools: (dbClient: DatabaseClient) => Promise<{ [key: string]: PoolV3 }> = async (
   dbClient: DatabaseClient
 ) => {

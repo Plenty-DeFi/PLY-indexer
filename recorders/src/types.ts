@@ -10,18 +10,14 @@ export interface Config {
   tzktLimit: number;
   tzktOffset: number;
   sharedDirectory: string;
-  tezGraph: string;
-  tezGraphWs: string;
-  tezGraphLimit: number;
-  rpc: string;
+
   postgres: {
     username: string;
     database: string;
     password: string;
     host: string;
   };
-  configUrl: string;
-  networkIndexer: string;
+
   startingBlock: string;
   initialIndexing: string;
   cacheTtl: number;
@@ -101,7 +97,6 @@ export interface Dependecies {
   contracts: Contracts;
   getPools?: () => Promise<any>;
   getTokens?: () => Promise<Token[]>;
-  getTokenPrice?: () => Promise<any>;
 }
 
 export interface BlockData {
@@ -438,4 +433,26 @@ export interface V3Pool {
 }
 export interface V3Pools {
   [address: string]: V3Pool;
+}
+
+export interface PoolV2 {
+  address: string;
+  token1: Token2;
+  token2: Token2;
+  lpToken: {
+    address: string;
+    decimals: number;
+  };
+  fees: number;
+  type: PoolV2Type;
+  token1Precision?: string;
+  token2Precision?: string;
+  gauge: string;
+  bribe: string;
+}
+
+export enum PoolV2Type {
+  VOLATILE = "VOLATILE",
+  STABLE = "STABLE",
+  TEZ = "TEZ",
 }
