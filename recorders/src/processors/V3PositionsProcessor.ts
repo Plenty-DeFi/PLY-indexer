@@ -98,6 +98,7 @@ export default class V3PositionsProcessor {
       ).rows;
       pools.forEach(async (pool) => {
         let offset = 0;
+        let offset2 = 0;
         //console.log("Updating V3 Positions", JSON.stringify(pool));
         while (true) {
           const updates = await this._tkztProvider.getBigMapUpdates<BigMapUpdateResponseType[]>({
@@ -115,26 +116,49 @@ export default class V3PositionsProcessor {
                   table: "v3_positions",
                   where: `key_id = '${update.content.key}' AND amm = '${pool.amm}'`,
                 });
-
-                break;
+              } else {
+                const position = update.content as V3PositionsResponse;
+                const owner = await this._tkztProvider.getOwner({
+                  bigMap: pool.ledger_bigmap,
+                  key: position.key,
+                });
+                await this._processPosition(
+                  position.key,
+                  owner,
+                  pool.amm,
+                  position.value.upper_tick_index,
+                  position.value.lower_tick_index,
+                  position.value.liquidity,
+                  position.value.fee_growth_inside_last.x,
+                  position.value.fee_growth_inside_last.y
+                );
               }
-              const position = update.content as V3PositionsResponse;
-              const owner = await this._tkztProvider.getOwner({
-                bigMap: pool.ledger_bigmap,
-                key: position.key,
-              });
-              await this._processPosition(
-                position.key,
-                owner,
-                pool.amm,
-                position.value.upper_tick_index,
-                position.value.lower_tick_index,
-                position.value.liquidity,
-                position.value.fee_growth_inside_last.x,
-                position.value.fee_growth_inside_last.y
-              );
             }
             offset += this._config.tzktOffset;
+          }
+        }
+
+        while (true) {
+          const updates = await this._tkztProvider.getBigMapUpdates<BigMapUpdateResponseType[]>({
+            level,
+            bigmapId: pool.ledger_bigmap.toString(),
+            limit: this._config.tzktLimit,
+            offset: offset2,
+          });
+          if (updates.length === 0) {
+            break;
+          } else {
+            for (const update of updates) {
+              if (update.action == "update_key") {
+                console.log("Tranfer v3 positions detected", update.content.value, update.content.key);
+                await this._dbClient.update({
+                  table: "v3_positions",
+                  set: `owner='${update.content.value}'`,
+                  where: `key_id = '${update.content.key}' AND amm = '${pool.amm}'`,
+                });
+              }
+            }
+            offset2 += this._config.tzktOffset;
           }
         }
       });
