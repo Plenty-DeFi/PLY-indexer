@@ -35,14 +35,14 @@ const slopesProcessor = new SlopesProcessor(dependencies);
     addRetryToAxios();
     await dependencies.dbClient.init();
     if (config.initialIndexing == "true") {
-      await poolsProcessor.process();
+      /*     await poolsProcessor.process();
       await locksProcesser.process();
       await votesProcessor.process();
       await feesProcessor.process();
       //await slopesProcessor.process();
-      await epochsProcessor.process();
+      await epochsProcessor.process(); */
 
-      //await v3PoolsProcessor.process();
+      await v3PoolsProcessor.process();
     }
 
     blockListener.listen();
@@ -61,15 +61,15 @@ const slopesProcessor = new SlopesProcessor(dependencies);
         for (let i = parseInt(lastBlockProcessed) + 1; i <= parseInt(b.level); i++) {
           await new Promise((resolve) => setTimeout(resolve, 300));
           console.log("--------------- Processing block", i, "----------------");
-          await locksProcesser.updateLocks(i.toString());
+          /*           await locksProcesser.updateLocks(i.toString());
           await poolsProcessor.updatePools(i.toString());
           await bribesProcessor.updateBribes(i.toString());
           await positionProcessor.updatePositions(i.toString());
           await votesProcessor.epochUpdates(i.toString());
           await votesProcessor.votesUpdates(i.toString());
-          await feesProcessor.updateFees(i.toString());
-          /*           await v3PoolsProcessor.process();
-          await v3PositionsProcessor.updatePositions(i.toString()); */
+          await feesProcessor.updateFees(i.toString()); */
+          await v3PoolsProcessor.process();
+          await v3PositionsProcessor.updatePositions(i.toString());
           lastBlockProcessed = i.toString();
         }
         processing = false;
