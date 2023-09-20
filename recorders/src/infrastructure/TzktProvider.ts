@@ -295,6 +295,7 @@ export default class TzktProvider {
       const res = await axios.get(`${this._tzktURL}/bigmaps/${params.bigMap}/keys`, {
         params: {
           select: "key,value",
+          active: "true",
           limit: params.limit,
           offset: params.offset,
         },
