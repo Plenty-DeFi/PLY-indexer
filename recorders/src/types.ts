@@ -21,6 +21,7 @@ export interface Config {
   startingBlock: string;
   initialIndexing: string;
   cacheTtl: number;
+  blacklistedTokens: number[];
 }
 
 export interface Contracts {

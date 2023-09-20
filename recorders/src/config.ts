@@ -14,7 +14,7 @@ export const config: Config = {
     password: process.env.POSTGRES_PASSWORD || "123456",
     host: process.env.POSTGRES_HOST || "localhost",
   },
-
+  blacklistedTokens: [37, 64, 75],
   rpc: process.env.RPC || "https://tezosrpc.midl.dev/ak-8zzygk8qh8iyb2",
   startingBlock: process.env.STARTING_BLOCK || "4153582",
   initialIndexing: process.env.INITIAL_INDEXING || "true", //"true" or "false",

@@ -58,9 +58,10 @@ export const getTokens = (cache: Cache, config: Config, dbClient: DatabaseClient
     let data = cache.get("tokens");
     //console.log("data", data);
     if (!data) {
-      const entries = await dbClient.getAllNoQuery({
+      const entries = await dbClient.getAll({
         table: "token",
         select: "*",
+        where: `id NOT IN (${config.blacklistedTokens.join(",")})`,
       });
 
       const tokens = entriesToTokens(entries, "symbol");
