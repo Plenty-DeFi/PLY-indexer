@@ -37,10 +37,10 @@ const slopesProcessor = new SlopesProcessor(dependencies);
     if (config.initialIndexing == "true") {
       await poolsProcessor.process();
       await locksProcesser.process();
-      await votesProcessor.process();
-      await feesProcessor.process();
-      //await slopesProcessor.process();
-      await epochsProcessor.process();
+      // await votesProcessor.process();
+      // await feesProcessor.process();
+      // //await slopesProcessor.process();
+      // await epochsProcessor.process();
 
       //await v3PoolsProcessor.process();
     }
@@ -68,8 +68,8 @@ const slopesProcessor = new SlopesProcessor(dependencies);
           await votesProcessor.epochUpdates(i.toString());
           await votesProcessor.votesUpdates(i.toString());
           await feesProcessor.updateFees(i.toString());
-          /*           await v3PoolsProcessor.process();
-          await v3PositionsProcessor.updatePositions(i.toString()); */
+          await v3PoolsProcessor.process();
+          await v3PositionsProcessor.updatePositions(i.toString());
           lastBlockProcessed = i.toString();
         }
         processing = false;
